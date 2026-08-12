@@ -407,17 +407,23 @@ export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string
 }
 
 export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string): Title | null {
-  const activeQueue = titles
-    .filter(
-      (title) => title.format === format && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && title.id !== excludeId,
-    )
+  const watchedIds = new Set(watched.map((item) => item.id));
+  const skippedOrder = new Map(skipped.map((id, index) => [id, index]));
+  const pool = titles.filter((title) => title.format === format && !watchedIds.has(title.id));
+  const freshQueue = pool
+    .filter((title) => !skippedOrder.has(title.id))
     .sort((a, b) => {
       const scoreDifference = scoreTitle(b, watched, skipped) - scoreTitle(a, watched, skipped);
       return scoreDifference || a.title.localeCompare(b.title);
     });
+  const passedQueue = pool
+    .filter((title) => skippedOrder.has(title.id))
+    .sort((a, b) => (skippedOrder.get(a.id) ?? 0) - (skippedOrder.get(b.id) ?? 0));
+  const queue = [...freshQueue, ...passedQueue];
+  const next = queue.find((title) => title.id !== excludeId);
 
-  // Passed titles are a durable browser preference. Never reintroduce them as a fallback.
-  return activeQueue[0] ?? null;
+  // “Not for me” moves a title to the back of this format’s queue. Only a fully watched format is empty.
+  return next ?? queue[0] ?? null;
 }
 
 export function getMatchScore(title: Title, watched: WatchedItem[]) {

@@ -33,3 +33,11 @@ The updated live preview passes on Anatomy of a Fall and immediately advances to
 Reload persistence passed: after passing on Anatomy of a Fall, a full page reload restored Past Lives instead of Anatomy of a Fall, confirming the skipped ID survives reload and is excluded from the active queue.
 
 Watched regression passed: after the reload test, marking Past Lives as watched added it to the archive, updated the signal to Romance and Drama, and advanced to Portrait of a Lady on Fire. Temporary QA storage was cleared afterward.
+
+## Continuous queue verification
+
+Passing on Anatomy of a Fall immediately advanced to Past Lives, confirming the active queue no longer ends when a title is passed. The next check will pass through fresh titles and confirm the passed title is deferred behind them.
+
+Back-of-queue test passed: Anatomy of a Fall → Past Lives → Perfect Days → The Holdovers. The first three passed titles did not immediately return, and fresh titles continued to surface as intended.
+
+TV continuous-queue test passed: Field Notes → Severance after one pass, with the 14-title TV catalog still active and no empty-queue message.
