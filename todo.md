@@ -1,10 +1,7 @@
-# Reelwise TMDB Integration Todo
+# Reelwise Watch Later Todo
 
-- [x] Upgrade the app so the TMDB key is held server-side rather than exposed in the browser.
-- [x] Configure the provided TMDB credential as a private project secret.
-- [x] Add live movie and TV discovery endpoints and map TMDB records to Reelwise cards.
-- [x] Preserve watched and passed preferences while recommending across a fresh live pool.
-- [x] Verify movies, TV shows, error handling, and responsive rendering before saving a checkpoint.
-- [x] Add explicit loading, error, and fallback states for TMDB catalogue queries.
-- [x] Verify the live movie and TV catalogue remains usable at a narrow mobile viewport.
-- [x] Re-run live-catalogue regression checks and save the completed checkpoint.
+- [x] Define watch-later state and how saved titles affect active recommendations.
+- [x] Add a Watch later action beside watched and pass controls.
+- [x] Add a persistent saved-list view with remove and watch-now actions.
+- [x] Verify saved title persistence, recommendations, and mobile usability.
+- [x] Re-run tests and build checks, then save the completed checkpoint.

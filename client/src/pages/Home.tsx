@@ -1,7 +1,7 @@
 /* Soft Signal style reminder: an asymmetric editorial spread, warm paper surfaces, restrained signal red, and recommendation-first hierarchy. */
 
 import { useEffect, useMemo, useState } from "react";
-import { Archive, ArrowUpRight, Check, ChevronRight, Compass, Film, Library, RotateCcw, Sparkles, Tv, X } from "lucide-react";
+import { Archive, ArrowUpRight, Bookmark, Check, ChevronRight, Compass, Film, Library, RotateCcw, Sparkles, Tv, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
@@ -9,8 +9,10 @@ import { getMatchScore, getRecommendation, getSignalSummary, titles, type Format
 
 const WATCHED_KEY = "reelwise-watched";
 const SKIPPED_KEY = "reelwise-skipped";
+const WATCH_LATER_KEY = "reelwise-watch-later";
 
-type View = "tonight" | "archive";
+type View = "tonight" | "archive" | "watchlist";
+type WatchLaterItem = { id: string; savedAt: string; title: Title };
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -51,6 +53,7 @@ export default function Home() {
   const [format, setFormat] = useState<Format>("movie");
   const [watched, setWatched] = useState<WatchedItem[]>(() => readStorage<WatchedItem[]>(WATCHED_KEY, []));
   const [skipped, setSkipped] = useState<string[]>(() => readStorage<string[]>(SKIPPED_KEY, []));
+  const [watchLater, setWatchLater] = useState<WatchLaterItem[]>(() => readStorage<WatchLaterItem[]>(WATCH_LATER_KEY, []));
   const [currentId, setCurrentId] = useState<string>("");
   const [isChanging, setIsChanging] = useState(false);
   const movieDiscovery = trpc.catalogue.discover.useQuery({ format: "movie" }, { staleTime: 15 * 60 * 1000, retry: 1 });
@@ -63,14 +66,15 @@ export default function Home() {
     [movieDiscovery.data, showDiscovery.data],
   );
   const catalogue = useMemo<Title[]>(() => (liveReady ? liveCatalogue : titles), [liveCatalogue, liveReady]);
+  const availableCatalogue = useMemo<Title[]>(() => catalogue.filter((title) => !watchLater.some((item) => item.id === title.id)), [catalogue, watchLater]);
   const archiveCatalogue = useMemo<Title[]>(() => [...catalogue, ...titles], [catalogue]);
 
   const recommendation = useMemo(() => {
     const selected = catalogue.find((title) => title.id === currentId);
     const selectedIsLive = currentId.startsWith("tmdb-");
-    if (selected && selected.format === format && !watched.some((item) => item.id === selected.id) && !skipped.includes(selected.id) && (!liveReady || selectedIsLive)) return selected;
-    return getRecommendation(format, watched, skipped, undefined, catalogue);
-  }, [catalogue, currentId, format, liveReady, skipped, watched]);
+    if (selected && selected.format === format && !watched.some((item) => item.id === selected.id) && !skipped.includes(selected.id) && !watchLater.some((item) => item.id === selected.id) && (!liveReady || selectedIsLive)) return selected;
+    return getRecommendation(format, watched, skipped, undefined, availableCatalogue);
+  }, [availableCatalogue, catalogue, currentId, format, liveReady, skipped, watchLater, watched]);
 
   const archiveTitles = useMemo(
     () => watched.map((item) => archiveCatalogue.find((title) => title.id === item.id)).filter(Boolean) as Title[],
@@ -101,7 +105,11 @@ export default function Home() {
     const nextWatched = [...watched.filter((entry) => entry.id !== item.id), item];
     setWatched(nextWatched);
     window.localStorage.setItem(WATCHED_KEY, JSON.stringify(nextWatched));
-    const next = getRecommendation(format, nextWatched, skipped, recommendation.id, catalogue);
+    const nextWatchLater = watchLater.filter((item) => item.id !== recommendation.id);
+    setWatchLater(nextWatchLater);
+    window.localStorage.setItem(WATCH_LATER_KEY, JSON.stringify(nextWatchLater));
+    const nextCatalogue = availableCatalogue.filter((title) => title.id !== recommendation.id);
+    const next = getRecommendation(format, nextWatched, skipped, recommendation.id, nextCatalogue);
     if (next) transitionTo(next.id);
     toast.success("Added to your watched archive", { description: recommendation.title });
   }
@@ -111,13 +119,13 @@ export default function Home() {
     const nextSkipped = Array.from(new Set([...skipped, recommendation.id]));
     setSkipped(nextSkipped);
     window.localStorage.setItem(SKIPPED_KEY, JSON.stringify(nextSkipped));
-    const next = getRecommendation(format, watched, nextSkipped, recommendation.id, catalogue);
+    const next = getRecommendation(format, watched, nextSkipped, recommendation.id, availableCatalogue);
     if (next) transitionTo(next.id);
     toast("Passed for now", { description: "We’ll keep the signal moving." });
   }
 
   function surpriseMe() {
-    const next = getRecommendation(format, watched, skipped, recommendation?.id, catalogue);
+    const next = getRecommendation(format, watched, skipped, recommendation?.id, availableCatalogue);
     if (next) transitionTo(next.id);
   }
 
@@ -126,6 +134,36 @@ export default function Home() {
     setWatched(nextWatched);
     window.localStorage.setItem(WATCHED_KEY, JSON.stringify(nextWatched));
     toast("Returned to your pool", { description: archiveCatalogue.find((title) => title.id === id)?.title });
+  }
+
+  function addToWatchLater() {
+    if (!recommendation) return;
+    if (watchLater.some((item) => item.id === recommendation.id)) {
+      toast("Already in Watch later", { description: recommendation.title });
+      return;
+    }
+    const item = { id: recommendation.id, savedAt: new Date().toISOString(), title: recommendation };
+    const nextWatchLater = [item, ...watchLater];
+    setWatchLater(nextWatchLater);
+    window.localStorage.setItem(WATCH_LATER_KEY, JSON.stringify(nextWatchLater));
+    const nextCatalogue = availableCatalogue.filter((title) => title.id !== recommendation.id);
+    const next = getRecommendation(format, watched, skipped, recommendation.id, nextCatalogue);
+    if (next) transitionTo(next.id);
+    toast.success("Saved to Watch later", { description: recommendation.title });
+  }
+
+  function removeFromWatchLater(id: string) {
+    const nextWatchLater = watchLater.filter((item) => item.id !== id);
+    setWatchLater(nextWatchLater);
+    window.localStorage.setItem(WATCH_LATER_KEY, JSON.stringify(nextWatchLater));
+    toast("Removed from Watch later");
+  }
+
+  function startWatchingLater(item: WatchLaterItem) {
+    removeFromWatchLater(item.id);
+    setFormat(item.title.format);
+    setCurrentId(item.id);
+    setView("tonight");
   }
 
   const hasHistory = watched.length > 0;
@@ -142,10 +180,10 @@ export default function Home() {
           <div className="hidden items-center gap-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#72736d] sm:flex">
             <span>Personal screening room</span>
             <span className="h-1.5 w-1.5 rounded-full bg-[#d94f3d]" />
-            <span>{watched.length} in archive</span>
+            <span>{watched.length} in archive · {watchLater.length} saved</span>
           </div>
-          <button onClick={() => setView(view === "archive" ? "tonight" : "archive")} className="flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-[#2d302d] transition-colors hover:text-[#d94f3d] sm:hidden">
-            {view === "archive" ? "Tonight" : "Archive"}<ChevronRight className="h-3.5 w-3.5" />
+          <button onClick={() => setView(view === "watchlist" ? "tonight" : "watchlist")} className="flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-[#2d302d] transition-colors hover:text-[#d94f3d] sm:hidden">
+            {view === "watchlist" ? "Tonight" : `Later ${watchLater.length}`}<ChevronRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </header>
@@ -156,6 +194,7 @@ export default function Home() {
             <p className="mb-5 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#95958d]">Your room</p>
             <button onClick={() => setView("tonight")} className={`side-nav-item ${view === "tonight" ? "is-active" : ""}`}><Compass className="h-4 w-4" />Tonight</button>
             <button onClick={() => setView("archive")} className={`side-nav-item ${view === "archive" ? "is-active" : ""}`}><Archive className="h-4 w-4" />Watched <span className="ml-auto tabular-nums text-[#96968f]">{watched.length}</span></button>
+            <button onClick={() => setView("watchlist")} className={`side-nav-item ${view === "watchlist" ? "is-active" : ""}`}><Bookmark className="h-4 w-4" />Watch later <span className="ml-auto tabular-nums text-[#96968f]">{watchLater.length}</span></button>
           </nav>
           <div className="space-y-4">
             <SignalLine />
@@ -207,6 +246,7 @@ export default function Home() {
                         </div>
                         <div className="mt-10 flex flex-wrap items-center gap-3">
                           <Button onClick={markWatched} className="h-11 rounded-none bg-[#d94f3d] px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-none transition-all hover:bg-[#ba3f31] active:scale-[0.97]"><Check className="mr-2 h-3.5 w-3.5" />I watched this</Button>
+                          <Button onClick={addToWatchLater} variant="outline" className="h-11 rounded-none border-[#2d302d]/18 bg-[#f8f2e9] px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#555650] shadow-none transition-all hover:border-[#d94f3d]/50 hover:bg-white active:scale-[0.97]"><Bookmark className="mr-2 h-3.5 w-3.5" />Watch later</Button>
                           <Button onClick={skipTitle} variant="outline" className="h-11 rounded-none border-[#2d302d]/18 bg-transparent px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#555650] shadow-none transition-all hover:border-[#d94f3d]/50 hover:bg-[#f8f2e9] active:scale-[0.97]"><X className="mr-2 h-3.5 w-3.5" />Not for me</Button>
                           <button onClick={surpriseMe} className="group flex h-11 items-center gap-2 px-2 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:hidden">Surprise me <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-[-45deg]" /></button>
                         </div>
@@ -226,9 +266,9 @@ export default function Home() {
                 </aside>
               </div>
 
-              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="flex items-center justify-between gap-5"><div><p className="eyebrow mb-2">More from the shelf</p><p className="font-serif text-[1.7rem] tracking-[-0.04em]">Keep the evening open.</p></div><button onClick={() => setView("archive")} className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">See archive <ArrowUpRight className="h-3.5 w-3.5" /></button></div><div className="mt-6 grid gap-3 sm:grid-cols-3">{catalogue.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
+              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="flex items-center justify-between gap-5"><div><p className="eyebrow mb-2">More from the shelf</p><p className="font-serif text-[1.7rem] tracking-[-0.04em]">Keep the evening open.</p></div><button onClick={() => setView("archive")} className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">See archive <ArrowUpRight className="h-3.5 w-3.5" /></button></div><div className="mt-6 grid gap-3 sm:grid-cols-3">{catalogue.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && !watchLater.some((item) => item.id === title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
             </section>
-          ) : (
+          ) : view === "archive" ? (
             <section className="animate-in fade-in duration-500" aria-labelledby="archive-heading">
               <div className="mb-10 flex flex-wrap items-end justify-between gap-6"><div><p className="eyebrow"><span className="eyebrow-dot" />Your watched archive</p><h1 id="archive-heading" className="mt-4 font-serif text-[clamp(3.8rem,8vw,7.4rem)] leading-[0.82] tracking-[-0.075em]">What stayed.</h1></div><div className="max-w-[260px] font-sans text-[12px] leading-[1.55] text-[#777870]">A growing record of the stories you made time for. Your next recommendation learns from this shelf.</div></div>
               {!archiveTitles.length ? (
@@ -237,6 +277,15 @@ export default function Home() {
                 <div className="archive-list">{archiveTitles.map((title, index) => <article key={title.id} className="archive-row" style={{ animationDelay: `${index * 40}ms` }}><div className="archive-index">0{index + 1}</div><PosterArt title={title} className="h-24 w-16 shrink-0 sm:h-32 sm:w-[5.2rem]" /><div className="min-w-0 flex-1"><div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#96968e]"><span>{title.format === "movie" ? "Movie" : "TV show"}</span><span className="h-1 w-1 rounded-full bg-[#d94f3d]" /><span>{title.year}</span></div><h2 className="truncate font-serif text-[clamp(1.8rem,3.2vw,3rem)] leading-none tracking-[-0.055em]">{title.title}</h2><p className="mt-2 truncate font-sans text-xs text-[#777870]">{title.genres.join(" · ")}</p></div><button onClick={() => removeFromArchive(title.id)} aria-label={`Remove ${title.title} from archive`} className="archive-remove"><X className="h-4 w-4" /></button></article>)}</div>
               )}
               <div className="mt-12 grid gap-5 border-t border-[#2d302d]/10 pt-6 sm:grid-cols-2"><div><p className="eyebrow mb-3">Your taste, in brief</p><p className="font-serif text-2xl leading-[1.05] tracking-[-0.05em]">{signalSummary.length ? `You keep coming back to ${signalSummary.map(([genre]) => genre.toLowerCase()).join(", ")}.` : "A pattern will appear after your first watch."}</p></div><div className="flex items-end justify-start sm:justify-end"><button onClick={() => { setView("tonight"); setCurrentId(""); }} className="group flex items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] hover:text-[#d94f3d]">Back to tonight <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></button></div></div>
+            </section>
+          ) : (
+            <section className="animate-in fade-in duration-500" aria-labelledby="watch-later-heading">
+              <div className="mb-10 flex flex-wrap items-end justify-between gap-6"><div><p className="eyebrow"><span className="eyebrow-dot" />Your saved list</p><h1 id="watch-later-heading" className="mt-4 font-serif text-[clamp(3.8rem,8vw,7.4rem)] leading-[0.82] tracking-[-0.075em]">For later.</h1></div><div className="max-w-[260px] font-sans text-[12px] leading-[1.55] text-[#777870]">A calm place to keep the titles you want to make time for. Saved titles stay out of the active queue until you choose one.</div></div>
+              {!watchLater.length ? (
+                <div className="empty-archive"><Bookmark className="h-7 w-7 text-[#d94f3d]" /><p className="mt-5 font-serif text-3xl tracking-[-0.05em]">Keep something for later.</p><p className="mt-3 max-w-sm font-sans text-sm leading-[1.55] text-[#777870]">Use Watch later on any recommendation and it will wait here until you are ready.</p><Button onClick={() => setView("tonight")} className="mt-7 h-11 rounded-none bg-[#2d302d] px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-none hover:bg-[#d94f3d]">Find something to save <ChevronRight className="ml-2 h-3.5 w-3.5" /></Button></div>
+              ) : (
+                <div className="archive-list">{watchLater.map((item, index) => <article key={item.id} className="archive-row" style={{ animationDelay: `${index * 40}ms` }}><div className="archive-index">0{index + 1}</div><PosterArt title={item.title} className="h-24 w-16 shrink-0 sm:h-32 sm:w-[5.2rem]" /><div className="min-w-0 flex-1"><div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#96968e]"><span>{item.title.format === "movie" ? "Movie" : "TV show"}</span><span className="h-1 w-1 rounded-full bg-[#d94f3d]" /><span>{item.title.year}</span></div><h2 className="truncate font-serif text-[clamp(1.8rem,3.2vw,3rem)] leading-none tracking-[-0.055em]">{item.title.title}</h2><p className="mt-2 truncate font-sans text-xs text-[#777870]">{item.title.genres.join(" · ")}</p></div><div className="flex shrink-0 items-center gap-2"><button onClick={() => startWatchingLater(item)} className="h-9 border border-[#2d302d]/18 bg-[#f8f2e9] px-3 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-[#555650] transition-colors hover:border-[#d94f3d]/50 hover:text-[#d94f3d]">Watch now</button><button onClick={() => removeFromWatchLater(item.id)} aria-label={`Remove ${item.title.title} from Watch later`} className="archive-remove"><X className="h-4 w-4" /></button></div></article>)}</div>
+              )}
             </section>
           )}
         </main>

@@ -21,3 +21,13 @@ Final TV queue check: passing on *Mushoku Tensei: Jobless Reincarnation* advance
 Stability verification: removing the redundant live-catalogue reset effect eliminated the previous maximum-update-depth condition. A fresh reload settled on TMDB’s *72 HOURS* with a 60-title live movie pool and no new browser-console error.
 
 Mobile QA: at a 390 × 844 viewport, the live TMDB movie card stacked poster, metadata, synopsis, and both primary actions cleanly; the Movies/TV Shows toggle remained visible, and the live shelf displayed as a readable vertical list. The layout did not clip controls or long content at the narrow breakpoint.
+
+Watch Later verification: saving TMDB’s *72 HOURS* incremented the saved count to one, persisted the title in the new list, and advanced the active recommendation to *Avatar Aang: The Last Airbender* without marking the saved title as watched or passed.
+
+Saved-list verification: the Watch Later view displayed *72 HOURS* with its poster, format, genres, Watch now action, and remove control. Choosing Watch now removed it from the saved list and returned it to the active recommendation view, ready to watch.
+
+Persistence checkpoint: *72 HOURS* was saved again and the page was fully reloaded. The next inspection verifies that the saved count and Watch Later entry are restored from local browser storage.
+
+Persistence result: after the reload, the saved count remained at one and *72 HOURS* was still kept out of the active recommendation. Reelwise instead recommended *Avatar Aang: The Last Airbender*, confirming saved titles remain in Watch Later until selected with Watch now.
+
+Watch Later mobile QA: at 390 × 844, the Later navigation affordance and Watch later control were fully visible and comfortably tappable alongside Watched and Not for me. The live card, actions, and shelf remained vertically ordered without clipping or horizontal overflow.
