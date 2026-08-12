@@ -1,7 +1,7 @@
-# Reelwise Bug Fix Todo
+# Reelwise Variety Expansion Todo
 
-- [x] Reproduce the “Not for me” interaction in the live preview.
-- [x] Trace the recommendation state transition and skipped-title persistence.
-- [x] Apply the smallest fix that makes the next recommendation render reliably.
-- [x] Verify “Not for me” and “I watched this” both advance and update state.
-- [x] Re-run checks, capture the corrected preview, and save a checkpoint.
+- [x] Inspect current title counts and recommendation traversal behavior for movies and TV shows.
+- [x] Expand the curated catalog with a broader set of distinct titles and taste tags.
+- [x] Revise ranking so recommendations cycle through unseen titles before returning to already passed items.
+- [x] Verify variety across movies and TV shows and confirm watched learning still works.
+- [x] Re-run checks, clear QA state, and save a corrected checkpoint.
