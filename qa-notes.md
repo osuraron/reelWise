@@ -25,3 +25,11 @@ Repeated TV traversal test passed: passing on Field Notes moved to Severance, th
 Movie traversal test also advanced cleanly: Anatomy of a Fall moved to Past Lives on pass, and the UI still shows a 12-title movie catalog. Additional passes will continue through the newly added titles rather than stopping at the original five-title set.
 
 Completed movie traversal test passed: after passing on Anatomy of a Fall, Past Lives, and Perfect Days, the recommendation advanced to The Holdovers. The catalog is no longer limited to the original repeat loop.
+
+## Permanent pass-preference verification
+
+The updated live preview passes on Anatomy of a Fall and immediately advances to Past Lives. The next check is a reload persistence test to confirm Anatomy of a Fall does not return after the browser reloads.
+
+Reload persistence passed: after passing on Anatomy of a Fall, a full page reload restored Past Lives instead of Anatomy of a Fall, confirming the skipped ID survives reload and is excluded from the active queue.
+
+Watched regression passed: after the reload test, marking Past Lives as watched added it to the archive, updated the signal to Romance and Drama, and advanced to Portrait of a Lady on Fire. Temporary QA storage was cleared afterward.

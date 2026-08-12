@@ -1,7 +1,7 @@
-# Reelwise Variety Expansion Todo
+# Reelwise Permanent Pass Preference Todo
 
-- [x] Inspect current title counts and recommendation traversal behavior for movies and TV shows.
-- [x] Expand the curated catalog with a broader set of distinct titles and taste tags.
-- [x] Revise ranking so recommendations cycle through unseen titles before returning to already passed items.
-- [x] Verify variety across movies and TV shows and confirm watched learning still works.
+- [x] Trace skipped-title persistence and recommendation fallback behavior.
+- [x] Make passed titles permanently excluded from recommendations and shelf items.
+- [x] Keep passed titles ordered behind the active queue instead of allowing fallback resurfacing.
+- [x] Verify repeated passes, reload persistence, and watched recommendations in both formats.
 - [x] Re-run checks, clear QA state, and save a corrected checkpoint.

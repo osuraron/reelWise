@@ -406,19 +406,18 @@ export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string
   return 35 + genreScore + tagScore + formatBoost + title.year / 100 - skipPenalty;
 }
 
-export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string) {
-  const unseenCandidates = titles.filter(
-    (title) => title.format === format && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && title.id !== excludeId,
-  );
-  const fallbackCandidates = titles.filter(
-    (title) => title.format === format && !watched.some((item) => item.id === title.id) && title.id !== excludeId,
-  );
-  const pool = unseenCandidates.length ? unseenCandidates : fallbackCandidates;
-  const candidates = pool.sort((a, b) => {
-    const scoreDifference = scoreTitle(b, watched, skipped) - scoreTitle(a, watched, skipped);
-    return scoreDifference || a.title.localeCompare(b.title);
-  });
-  return candidates[0] ?? titles.find((title) => title.format === format && title.id !== excludeId) ?? titles.find((title) => title.format === format)!;
+export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string): Title | null {
+  const activeQueue = titles
+    .filter(
+      (title) => title.format === format && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && title.id !== excludeId,
+    )
+    .sort((a, b) => {
+      const scoreDifference = scoreTitle(b, watched, skipped) - scoreTitle(a, watched, skipped);
+      return scoreDifference || a.title.localeCompare(b.title);
+    });
+
+  // Passed titles are a durable browser preference. Never reintroduce them as a fallback.
+  return activeQueue[0] ?? null;
 }
 
 export function getMatchScore(title: Title, watched: WatchedItem[]) {

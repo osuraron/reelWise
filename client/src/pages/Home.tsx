@@ -55,7 +55,7 @@ export default function Home() {
 
   const recommendation = useMemo(() => {
     const selected = titles.find((title) => title.id === currentId);
-    if (selected && selected.format === format && !watched.some((item) => item.id === selected.id)) return selected;
+    if (selected && selected.format === format && !watched.some((item) => item.id === selected.id) && !skipped.includes(selected.id)) return selected;
     return getRecommendation(format, watched, skipped);
   }, [currentId, format, skipped, watched]);
 
@@ -89,7 +89,7 @@ export default function Home() {
     setWatched(nextWatched);
     window.localStorage.setItem(WATCHED_KEY, JSON.stringify(nextWatched));
     const next = getRecommendation(format, nextWatched, skipped, recommendation.id);
-    transitionTo(next.id);
+    if (next) transitionTo(next.id);
     toast.success("Added to your watched archive", { description: recommendation.title });
   }
 
@@ -99,13 +99,13 @@ export default function Home() {
     setSkipped(nextSkipped);
     window.localStorage.setItem(SKIPPED_KEY, JSON.stringify(nextSkipped));
     const next = getRecommendation(format, watched, nextSkipped, recommendation.id);
-    transitionTo(next.id);
+    if (next) transitionTo(next.id);
     toast("Passed for now", { description: "We’ll keep the signal moving." });
   }
 
   function surpriseMe() {
     const next = getRecommendation(format, watched, skipped, recommendation?.id);
-    transitionTo(next.id);
+    if (next) transitionTo(next.id);
   }
 
   function removeFromArchive(id: string) {
@@ -201,8 +201,8 @@ export default function Home() {
 
                 <aside className="pt-1 lg:pl-3">
                   <div className="why-note">
-                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{getMatchScore(recommendation, watched)}%</span></div>
-                    <p className="font-serif text-[1.65rem] leading-[1.03] tracking-[-0.04em]">“{recommendation.reason}”</p>
+                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{recommendation ? `${getMatchScore(recommendation, watched)}%` : "—"}</span></div>
+                    <p className="font-serif text-[1.65rem] leading-[1.03] tracking-[-0.04em]">{recommendation ? `“${recommendation.reason}”` : "“You’ve reached the end of this format’s active queue.”"}</p>
                     <div className="mt-7 h-px w-full bg-[#2d302d]/12" />
                     <p className="mt-4 font-sans text-[12px] leading-[1.55] text-[#777870]">{hasHistory ? "The more you watch, the more this little room starts to understand your taste." : "Start with a title. Reelwise will tune the next one around what you actually finish."}</p>
                   </div>
