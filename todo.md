@@ -1,7 +1,6 @@
-# Reelwise Watch Later Todo
+# Reelwise Dark Theme Todo
 
-- [x] Define watch-later state and how saved titles affect active recommendations.
-- [x] Add a Watch later action beside watched and pass controls.
-- [x] Add a persistent saved-list view with remove and watch-now actions.
-- [x] Verify saved title persistence, recommendations, and mobile usability.
-- [x] Re-run tests and build checks, then save the completed checkpoint.
+- [x] Define a dark editorial palette with accessible text, borders, and accent states.
+- [x] Apply the dark theme across recommendations, archive, Watch Later, and feedback states.
+- [x] Verify live TMDB posters and interaction controls remain clear against dark surfaces.
+- [x] Verify desktop and mobile contrast, then re-run checks and save a checkpoint.

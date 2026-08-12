@@ -31,3 +31,7 @@ Persistence checkpoint: *72 HOURS* was saved again and the page was fully reload
 Persistence result: after the reload, the saved count remained at one and *72 HOURS* was still kept out of the active recommendation. Reelwise instead recommended *Avatar Aang: The Last Airbender*, confirming saved titles remain in Watch Later until selected with Watch now.
 
 Watch Later mobile QA: at 390 × 844, the Later navigation affordance and Watch later control were fully visible and comfortably tappable alongside Watched and Not for me. The live card, actions, and shelf remained vertically ordered without clipping or horizontal overflow.
+
+Dark-theme QA: the desktop live recommendation spread retained strong hierarchy, readable metadata, visible signal-red actions, and clear poster contrast on deep charcoal surfaces. At 390 × 844, the dark mobile card, Watch Later control, why-note, and shelf remain fully legible with no clipping or loss of tap targets.
+
+Dark Watch Later QA: the saved-list view retained readable title, metadata, poster, Watch now button, and remove control against the charcoal palette; navigation counts and active-state styling remained clear.

@@ -169,7 +169,7 @@ export default function Home() {
   const hasHistory = watched.length > 0;
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f3eee4] text-[#2d302d]">
+    <div className="dark-cinema min-h-screen overflow-x-hidden bg-[#111311] text-[#f6efe2]">
       <div className="paper-grain" aria-hidden="true" />
       <header className="relative z-10 border-b border-[#2d302d]/10">
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-6 px-5 py-5 sm:px-8 lg:px-12">
