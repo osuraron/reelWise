@@ -72,10 +72,8 @@ export default function Home() {
 
   function transitionTo(nextId: string) {
     setIsChanging(true);
-    window.setTimeout(() => {
-      setCurrentId(nextId);
-      setIsChanging(false);
-    }, 120);
+    setCurrentId(nextId);
+    window.setTimeout(() => setIsChanging(false), 120);
   }
 
   function chooseFormat(nextFormat: Format) {

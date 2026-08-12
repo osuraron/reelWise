@@ -7,3 +7,11 @@
 - Live preview smoke test passed: clicking “I watched this” moved Past Lives into the archive, refreshed the recommendation to Perfect Days, changed the archive count to 1, and updated the signal summary with Romance and Drama.
 - Temporary browser localStorage test data was cleared after the smoke test so the app opens clean for the user.
 - One non-blocking build warning remains: the generated paper texture is an absolute runtime asset URL and is intentionally left unresolved at build time; the live preview resolves it correctly.
+
+## Skip-flow bug investigation
+
+The live preview reproduced the reported interaction from a clean archive. Clicking “Not for me” did persist the pass state and changed the recommendation from Past Lives to Perfect Days, but the implementation waits 120ms before updating `currentId`. That delayed state handoff is unnecessarily fragile and can make a click appear unresponsive if a timer is interrupted or multiple actions are taken quickly. The fix will update the next title immediately while retaining the short visual transition.
+
+The fixed build passed TypeScript and production build checks. The live preview was reset and confirmed to start with Past Lives and an empty archive, ready for the final skip-flow test.
+
+Final interaction verification passed: “Not for me” immediately changed Past Lives to Perfect Days and displayed the “Passed for now” feedback. “I watched this” then added Perfect Days to the archive, incremented the archive count to 1, updated the taste signal, and advanced to After Yang. Temporary browser state will be cleared before delivery.
