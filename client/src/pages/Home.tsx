@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Archive, ArrowUpRight, Check, ChevronRight, Compass, Film, Library, RotateCcw, Sparkles, Tv, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
 import { getMatchScore, getRecommendation, getSignalSummary, titles, type Format, type Title, type WatchedItem } from "@/lib/recommendations";
 
 const WATCHED_KEY = "reelwise-watched";
@@ -52,19 +53,31 @@ export default function Home() {
   const [skipped, setSkipped] = useState<string[]>(() => readStorage<string[]>(SKIPPED_KEY, []));
   const [currentId, setCurrentId] = useState<string>("");
   const [isChanging, setIsChanging] = useState(false);
+  const movieDiscovery = trpc.catalogue.discover.useQuery({ format: "movie" }, { staleTime: 15 * 60 * 1000, retry: 1 });
+  const showDiscovery = trpc.catalogue.discover.useQuery({ format: "show" }, { staleTime: 15 * 60 * 1000, retry: 1 });
+  const liveReady = Boolean(movieDiscovery.data?.length && showDiscovery.data?.length);
+  const liveLoading = movieDiscovery.isLoading || showDiscovery.isLoading;
+  const liveError = movieDiscovery.isError || showDiscovery.isError;
+  const liveCatalogue = useMemo<Title[]>(
+    () => [...(movieDiscovery.data ?? []), ...(showDiscovery.data ?? [])],
+    [movieDiscovery.data, showDiscovery.data],
+  );
+  const catalogue = useMemo<Title[]>(() => (liveReady ? liveCatalogue : titles), [liveCatalogue, liveReady]);
+  const archiveCatalogue = useMemo<Title[]>(() => [...catalogue, ...titles], [catalogue]);
 
   const recommendation = useMemo(() => {
-    const selected = titles.find((title) => title.id === currentId);
-    if (selected && selected.format === format && !watched.some((item) => item.id === selected.id) && !skipped.includes(selected.id)) return selected;
-    return getRecommendation(format, watched, skipped);
-  }, [currentId, format, skipped, watched]);
+    const selected = catalogue.find((title) => title.id === currentId);
+    const selectedIsLive = currentId.startsWith("tmdb-");
+    if (selected && selected.format === format && !watched.some((item) => item.id === selected.id) && !skipped.includes(selected.id) && (!liveReady || selectedIsLive)) return selected;
+    return getRecommendation(format, watched, skipped, undefined, catalogue);
+  }, [catalogue, currentId, format, liveReady, skipped, watched]);
 
   const archiveTitles = useMemo(
-    () => watched.map((item) => titles.find((title) => title.id === item.id)).filter(Boolean) as Title[],
-    [watched],
+    () => watched.map((item) => archiveCatalogue.find((title) => title.id === item.id)).filter(Boolean) as Title[],
+    [archiveCatalogue, watched],
   );
-  const signalSummary = useMemo(() => getSignalSummary(watched), [watched]);
-  const formatCount = titles.filter((title) => title.format === format).length;
+  const signalSummary = useMemo(() => getSignalSummary(watched, archiveCatalogue), [archiveCatalogue, watched]);
+  const formatCount = catalogue.filter((title) => title.format === format).length;
 
   useEffect(() => {
     if (recommendation && currentId !== recommendation.id) setCurrentId(recommendation.id);
@@ -88,7 +101,7 @@ export default function Home() {
     const nextWatched = [...watched.filter((entry) => entry.id !== item.id), item];
     setWatched(nextWatched);
     window.localStorage.setItem(WATCHED_KEY, JSON.stringify(nextWatched));
-    const next = getRecommendation(format, nextWatched, skipped, recommendation.id);
+    const next = getRecommendation(format, nextWatched, skipped, recommendation.id, catalogue);
     if (next) transitionTo(next.id);
     toast.success("Added to your watched archive", { description: recommendation.title });
   }
@@ -98,13 +111,13 @@ export default function Home() {
     const nextSkipped = Array.from(new Set([...skipped, recommendation.id]));
     setSkipped(nextSkipped);
     window.localStorage.setItem(SKIPPED_KEY, JSON.stringify(nextSkipped));
-    const next = getRecommendation(format, watched, nextSkipped, recommendation.id);
+    const next = getRecommendation(format, watched, nextSkipped, recommendation.id, catalogue);
     if (next) transitionTo(next.id);
     toast("Passed for now", { description: "We’ll keep the signal moving." });
   }
 
   function surpriseMe() {
-    const next = getRecommendation(format, watched, skipped, recommendation?.id);
+    const next = getRecommendation(format, watched, skipped, recommendation?.id, catalogue);
     if (next) transitionTo(next.id);
   }
 
@@ -112,7 +125,7 @@ export default function Home() {
     const nextWatched = watched.filter((entry) => entry.id !== id);
     setWatched(nextWatched);
     window.localStorage.setItem(WATCHED_KEY, JSON.stringify(nextWatched));
-    toast("Returned to your pool", { description: titles.find((title) => title.id === id)?.title });
+    toast("Returned to your pool", { description: archiveCatalogue.find((title) => title.id === id)?.title });
   }
 
   const hasHistory = watched.length > 0;
@@ -157,8 +170,11 @@ export default function Home() {
               <button onClick={() => chooseFormat("movie")} className={`format-tab ${format === "movie" ? "is-active" : ""}`}><Film className="h-3.5 w-3.5" />Movies</button>
               <button onClick={() => chooseFormat("show")} className={`format-tab ${format === "show" ? "is-active" : ""}`}><Tv className="h-3.5 w-3.5" />TV shows</button>
             </div>
-            <div className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#999990] sm:flex"><span className="text-[#d94f3d]">Edition 01</span><span>/</span><span>{formatCount} titles</span></div>
+            <div className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#999990] sm:flex"><span className="text-[#d94f3d]">{liveReady ? "Live catalogue" : "Edition 01"}</span><span>/</span><span>{formatCount} titles</span></div>
           </div>
+
+          {liveLoading && !liveReady && <p className="mb-6 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#8a8b84]">Refreshing the live catalogue…</p>}
+          {liveError && !liveReady && <div role="status" className="mb-6 border-l-2 border-[#d94f3d] bg-[#f8f2e9] px-4 py-3 font-sans text-xs leading-[1.55] text-[#666861]">The live catalogue is temporarily unavailable. Reelwise is showing the local shelf while it reconnects.</div>}
 
           {view === "tonight" ? (
             <section className="animate-in fade-in duration-500" aria-labelledby="tonight-heading">
@@ -179,7 +195,7 @@ export default function Home() {
                   {recommendation && (
                     <div className="featured-card">
                       <div className="poster-wrap">
-                        <PosterArt title={recommendation} className="aspect-[4/5] w-full" />
+                        <PosterArt key={recommendation.id} title={recommendation} className="aspect-[4/5] w-full" />
                         <div className="poster-caption"><span>Reelwise selection</span><span>{recommendation.year}</span></div>
                       </div>
                       <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
@@ -201,7 +217,7 @@ export default function Home() {
 
                 <aside className="pt-1 lg:pl-3">
                   <div className="why-note">
-                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{recommendation ? `${getMatchScore(recommendation, watched)}%` : "—"}</span></div>
+                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{recommendation ? `${getMatchScore(recommendation, watched, archiveCatalogue)}%` : "—"}</span></div>
                     <p className="font-serif text-[1.65rem] leading-[1.03] tracking-[-0.04em]">{recommendation ? `“${recommendation.reason}”` : "“You’ve reached the end of this format’s active queue.”"}</p>
                     <div className="mt-7 h-px w-full bg-[#2d302d]/12" />
                     <p className="mt-4 font-sans text-[12px] leading-[1.55] text-[#777870]">{hasHistory ? "The more you watch, the more this little room starts to understand your taste." : "Start with a title. Reelwise will tune the next one around what you actually finish."}</p>
@@ -210,7 +226,7 @@ export default function Home() {
                 </aside>
               </div>
 
-              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="flex items-center justify-between gap-5"><div><p className="eyebrow mb-2">More from the shelf</p><p className="font-serif text-[1.7rem] tracking-[-0.04em]">Keep the evening open.</p></div><button onClick={() => setView("archive")} className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">See archive <ArrowUpRight className="h-3.5 w-3.5" /></button></div><div className="mt-6 grid gap-3 sm:grid-cols-3">{titles.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
+              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="flex items-center justify-between gap-5"><div><p className="eyebrow mb-2">More from the shelf</p><p className="font-serif text-[1.7rem] tracking-[-0.04em]">Keep the evening open.</p></div><button onClick={() => setView("archive")} className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">See archive <ArrowUpRight className="h-3.5 w-3.5" /></button></div><div className="mt-6 grid gap-3 sm:grid-cols-3">{catalogue.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
             </section>
           ) : (
             <section className="animate-in fade-in duration-500" aria-labelledby="archive-heading">

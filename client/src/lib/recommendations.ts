@@ -389,8 +389,8 @@ export const titles: Title[] = [
 
 export type WatchedItem = { id: string; watchedAt: string };
 
-export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string[]) {
-  const watchedTitles = watched.map((item) => titles.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
+export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string[], catalogue: Title[] = titles) {
+  const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
   const genreCounts = watchedTitles.flatMap((item) => item.genres).reduce<Record<string, number>>((acc, genre) => {
     acc[genre] = (acc[genre] ?? 0) + 1;
     return acc;
@@ -406,14 +406,14 @@ export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string
   return 35 + genreScore + tagScore + formatBoost + title.year / 100 - skipPenalty;
 }
 
-export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string): Title | null {
+export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string, catalogue: Title[] = titles): Title | null {
   const watchedIds = new Set(watched.map((item) => item.id));
   const skippedOrder = new Map(skipped.map((id, index) => [id, index]));
-  const pool = titles.filter((title) => title.format === format && !watchedIds.has(title.id));
+  const pool = catalogue.filter((title) => title.format === format && !watchedIds.has(title.id));
   const freshQueue = pool
     .filter((title) => !skippedOrder.has(title.id))
     .sort((a, b) => {
-      const scoreDifference = scoreTitle(b, watched, skipped) - scoreTitle(a, watched, skipped);
+      const scoreDifference = scoreTitle(b, watched, skipped, catalogue) - scoreTitle(a, watched, skipped, catalogue);
       return scoreDifference || a.title.localeCompare(b.title);
     });
   const passedQueue = pool
@@ -426,16 +426,16 @@ export function getRecommendation(format: Format, watched: WatchedItem[], skippe
   return next ?? queue[0] ?? null;
 }
 
-export function getMatchScore(title: Title, watched: WatchedItem[]) {
-  const watchedTitles = watched.map((item) => titles.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
+export function getMatchScore(title: Title, watched: WatchedItem[], catalogue: Title[] = titles) {
+  const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
   if (!watchedTitles.length) return 92;
   const sharedGenres = watchedTitles.flatMap((item) => item.genres).filter((genre) => title.genres.includes(genre)).length;
   const sharedTags = watchedTitles.flatMap((item) => item.tags).filter((tag) => title.tags.includes(tag)).length;
   return Math.min(98, 78 + sharedGenres * 5 + sharedTags * 3);
 }
 
-export function getSignalSummary(watched: WatchedItem[]) {
-  const watchedTitles = watched.map((item) => titles.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
+export function getSignalSummary(watched: WatchedItem[], catalogue: Title[] = titles) {
+  const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
   const counts = watchedTitles.flatMap((item) => item.genres).reduce<Record<string, number>>((acc, genre) => {
     acc[genre] = (acc[genre] ?? 0) + 1;
     return acc;
