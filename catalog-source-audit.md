@@ -35,3 +35,19 @@ Watch Later mobile QA: at 390 × 844, the Later navigation affordance and Watch 
 Dark-theme QA: the desktop live recommendation spread retained strong hierarchy, readable metadata, visible signal-red actions, and clear poster contrast on deep charcoal surfaces. At 390 × 844, the dark mobile card, Watch Later control, why-note, and shelf remain fully legible with no clipping or loss of tap targets.
 
 Dark Watch Later QA: the saved-list view retained readable title, metadata, poster, Watch now button, and remove control against the charcoal palette; navigation counts and active-state styling remained clear.
+
+Onboarding verification: a fresh profile opens on the first dark-theme onboarding step with up to three favorite title choices. Selecting *Past Lives* visibly updated the selected state and the counter to one of three.
+
+Onboarding flow verification: Continue reached the second step, which presents five mood directions. Selecting *Ideas after dark* updated its choice state and the counter to one of three while preserving the previously selected favorite.
+
+Seed-ranking verification: completing onboarding with *Past Lives* plus *Ideas after dark* produced a live first recommendation for *Masters of the Universe*, with an 86% score and a transparent explanation citing the selected fantasy and sci-fi signal. The profile was then reloaded to confirm it persists in local browser storage.
+
+Onboarding persistence and mobile QA: after reload, Reelwise returned directly to the seeded recommendation rather than onboarding and retained the same explanation and preference summary. At 390 × 844, the opening selection cards, progress cue, primary action, skip control, and counter remain readable and vertically accessible without horizontal overflow.
+
+Skip-path QA setup: the temporary onboarding profile was removed in the QA browser while keeping watched and Watch Later data intact, then the page was reloaded to return to the first onboarding step.
+
+First skip-path verification: Skip this step advanced from favorite-title selection to the mood step with no favorites selected, confirming that the first onboarding choice is optional.
+
+Final skip-path verification: Skip for now completed onboarding with an empty persisted profile and landed on a valid live recommendation, *Avatar Aang: The Last Airbender*, with the neutral 78% explanation. Both onboarding steps are therefore optional and safe to bypass.
+
+Final QA reset: the temporary profile was cleared after validation, and the live preview now opens again at the first onboarding step for a clean first-run experience.

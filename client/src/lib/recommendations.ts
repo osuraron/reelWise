@@ -388,8 +388,9 @@ export const titles: Title[] = [
 ];
 
 export type WatchedItem = { id: string; watchedAt: string };
+export type TasteProfile = { favoriteIds: string[]; genres: string[]; tags: string[]; completedAt: string };
 
-export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string[], catalogue: Title[] = titles) {
+export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string[], catalogue: Title[] = titles, profile?: TasteProfile) {
   const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
   const genreCounts = watchedTitles.flatMap((item) => item.genres).reduce<Record<string, number>>((acc, genre) => {
     acc[genre] = (acc[genre] ?? 0) + 1;
@@ -401,19 +402,21 @@ export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string
   }, {});
   const genreScore = title.genres.reduce((sum, genre) => sum + (genreCounts[genre] ?? 0) * 11, 0);
   const tagScore = title.tags.reduce((sum, tag) => sum + (tagCounts[tag] ?? 0) * 7, 0);
+  const seedGenreScore = title.genres.reduce((sum, genre) => sum + (profile?.genres.includes(genre) ? 9 : 0), 0);
+  const seedTagScore = title.tags.reduce((sum, tag) => sum + (profile?.tags.includes(tag) ? 6 : 0), 0);
   const formatBoost = watchedTitles.filter((item) => item.format === title.format).length * 5;
   const skipPenalty = skipped.includes(title.id) ? 16 : 0;
-  return 35 + genreScore + tagScore + formatBoost + title.year / 100 - skipPenalty;
+  return 35 + genreScore + tagScore + seedGenreScore + seedTagScore + formatBoost + title.year / 100 - skipPenalty;
 }
 
-export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string, catalogue: Title[] = titles): Title | null {
+export function getRecommendation(format: Format, watched: WatchedItem[], skipped: string[], excludeId?: string, catalogue: Title[] = titles, profile?: TasteProfile): Title | null {
   const watchedIds = new Set(watched.map((item) => item.id));
   const skippedOrder = new Map(skipped.map((id, index) => [id, index]));
   const pool = catalogue.filter((title) => title.format === format && !watchedIds.has(title.id));
   const freshQueue = pool
     .filter((title) => !skippedOrder.has(title.id))
     .sort((a, b) => {
-      const scoreDifference = scoreTitle(b, watched, skipped, catalogue) - scoreTitle(a, watched, skipped, catalogue);
+      const scoreDifference = scoreTitle(b, watched, skipped, catalogue, profile) - scoreTitle(a, watched, skipped, catalogue, profile);
       return scoreDifference || a.title.localeCompare(b.title);
     });
   const passedQueue = pool
@@ -426,19 +429,32 @@ export function getRecommendation(format: Format, watched: WatchedItem[], skippe
   return next ?? queue[0] ?? null;
 }
 
-export function getMatchScore(title: Title, watched: WatchedItem[], catalogue: Title[] = titles) {
+export function getMatchScore(title: Title, watched: WatchedItem[], catalogue: Title[] = titles, profile?: TasteProfile) {
   const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
-  if (!watchedTitles.length) return 92;
+  if (!watchedTitles.length && !profile) return 92;
   const sharedGenres = watchedTitles.flatMap((item) => item.genres).filter((genre) => title.genres.includes(genre)).length;
   const sharedTags = watchedTitles.flatMap((item) => item.tags).filter((tag) => title.tags.includes(tag)).length;
-  return Math.min(98, 78 + sharedGenres * 5 + sharedTags * 3);
+  const seedGenreMatches = title.genres.filter((genre) => profile?.genres.includes(genre)).length;
+  const seedTagMatches = title.tags.filter((tag) => profile?.tags.includes(tag)).length;
+  return Math.min(98, 78 + sharedGenres * 5 + sharedTags * 3 + seedGenreMatches * 4 + seedTagMatches * 3);
 }
 
-export function getSignalSummary(watched: WatchedItem[], catalogue: Title[] = titles) {
+export function getSignalSummary(watched: WatchedItem[], catalogue: Title[] = titles, profile?: TasteProfile) {
   const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];
   const counts = watchedTitles.flatMap((item) => item.genres).reduce<Record<string, number>>((acc, genre) => {
     acc[genre] = (acc[genre] ?? 0) + 1;
     return acc;
   }, {});
+  if (!watchedTitles.length && profile) {
+    profile.genres.forEach((genre) => { counts[genre] = (counts[genre] ?? 0) + 1; });
+  }
   return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+}
+
+export function getMatchReason(title: Title, watched: WatchedItem[], profile?: TasteProfile) {
+  if (!watched.length && profile) {
+    const signals = [...title.genres, ...title.tags].filter((signal) => profile.genres.includes(signal) || profile.tags.includes(signal)).slice(0, 2);
+    if (signals.length) return `Your opening signal points toward ${signals.map((signal) => signal.toLowerCase()).join(" and ")}.`;
+  }
+  return title.reason;
 }

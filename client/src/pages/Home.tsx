@@ -5,11 +5,12 @@ import { Archive, ArrowUpRight, Bookmark, Check, ChevronRight, Compass, Film, Li
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { getMatchScore, getRecommendation, getSignalSummary, titles, type Format, type Title, type WatchedItem } from "@/lib/recommendations";
+import { getMatchReason, getMatchScore, getRecommendation, getSignalSummary, titles, type Format, type TasteProfile, type Title, type WatchedItem } from "@/lib/recommendations";
 
 const WATCHED_KEY = "reelwise-watched";
 const SKIPPED_KEY = "reelwise-skipped";
 const WATCH_LATER_KEY = "reelwise-watch-later";
+const TASTE_PROFILE_KEY = "reelwise-taste-profile";
 
 type View = "tonight" | "archive" | "watchlist";
 type WatchLaterItem = { id: string; savedAt: string; title: Title };
@@ -48,12 +49,62 @@ function SignalLine() {
   return <span aria-hidden="true" className="signal-line" />;
 }
 
+const starterFavorites = titles.filter((title) => ["past-lives", "anatomy-of-a-fall", "the-holdovers", "the-bear", "severance", "fleabag"].includes(title.id));
+const tasteSignals = [
+  { id: "human", label: "Quiet & human", note: "intimate stories with room to breathe", genres: ["Drama", "Romance"], tags: ["tender", "intimate", "quiet"] },
+  { id: "mystery", label: "Sharp mysteries", note: "tension, ambiguity, and good questions", genres: ["Thriller", "Mystery"], tags: ["precise", "moody", "sharp"] },
+  { id: "ideas", label: "Ideas after dark", note: "science fiction and philosophical turns", genres: ["Sci-fi", "Fantasy"], tags: ["philosophical", "eerie", "haunting"] },
+  { id: "wit", label: "Warm & witty", note: "funny, generous, character-led worlds", genres: ["Comedy", "Family"], tags: ["warm", "wry", "ensemble"] },
+  { id: "momentum", label: "A little momentum", note: "adventure, crime, and a moving plot", genres: ["Action", "Adventure", "Crime"], tags: ["urgent", "current", "live-discovery"] },
+] as const;
+
+function Onboarding({ onComplete }: { onComplete: (profile: TasteProfile) => void }) {
+  const [step, setStep] = useState<0 | 1>(0);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [signalIds, setSignalIds] = useState<string[]>([]);
+  const selectedFavorites = starterFavorites.filter((title) => favoriteIds.includes(title.id));
+
+  function toggleFavorite(id: string) {
+    setFavoriteIds((current) => current.includes(id) ? current.filter((item) => item !== id) : current.length < 3 ? [...current, id] : current);
+  }
+
+  function toggleSignal(id: string) {
+    setSignalIds((current) => current.includes(id) ? current.filter((item) => item !== id) : current.length < 3 ? [...current, id] : current);
+  }
+
+  function finish() {
+    const selectedSignals = tasteSignals.filter((signal) => signalIds.includes(signal.id));
+    const profile: TasteProfile = {
+      favoriteIds,
+      genres: Array.from(new Set([...selectedFavorites.flatMap((title) => title.genres), ...selectedSignals.flatMap((signal) => signal.genres)])),
+      tags: Array.from(new Set([...selectedFavorites.flatMap((title) => title.tags), ...selectedSignals.flatMap((signal) => signal.tags)])),
+      completedAt: new Date().toISOString(),
+    };
+    onComplete(profile);
+  }
+
+  return (
+    <main className="dark-cinema min-h-screen overflow-hidden bg-[#111311] px-5 py-7 text-[#f6efe2] sm:px-8 sm:py-10">
+      <div className="paper-grain" aria-hidden="true" />
+      <div className="relative mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl flex-col border border-[#f6efe2]/15 bg-[#171b17]/95 px-6 py-8 shadow-[0_24px_80px_rgba(0,0,0,.34)] sm:px-10 sm:py-11">
+        <div className="flex items-center justify-between gap-6 border-b border-[#f6efe2]/12 pb-5"><div className="flex items-center gap-3"><span className="brand-mark"><img src="/manus-storage/reelwise-signal-glyph_882a2283.png" alt="" /></span><span className="font-serif text-[1.55rem] tracking-[-0.05em]">reel<span className="text-[#d94f3d]">/</span>wise</span></div><span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#a9aaa1]">Opening signal · {step + 1}/2</span></div>
+        {step === 0 ? (
+          <div className="flex flex-1 flex-col justify-center py-10"><p className="eyebrow"><span className="eyebrow-dot" />A quick first read</p><h1 className="mt-5 max-w-3xl font-serif text-[clamp(3.6rem,8vw,7.2rem)] leading-[0.83] tracking-[-0.075em]">What already<br /><em>stayed with you?</em></h1><p className="mt-7 max-w-xl font-sans text-[15px] leading-[1.6] text-[#c3c5bb]">Choose up to three favorites. We will borrow their genres and emotional signals to make the first recommendation feel less random.</p><div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{starterFavorites.map((title) => <button key={title.id} onClick={() => toggleFavorite(title.id)} className={`group border p-4 text-left transition-colors ${favoriteIds.includes(title.id) ? "border-[#d94f3d] bg-[#2b312b]" : "border-[#f6efe2]/13 bg-[#1e241f] hover:border-[#f6efe2]/35"}`}><div className="flex items-center justify-between gap-4"><span className="font-serif text-2xl leading-[.9] tracking-[-0.05em]">{title.title}</span>{favoriteIds.includes(title.id) && <Check className="h-4 w-4 shrink-0 text-[#d94f3d]" />}</div><p className="mt-4 font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-[#a9aaa1]">{title.genres.slice(0, 2).join(" · ")}</p></button>)}</div><div className="mt-10 flex flex-wrap items-center gap-4"><Button onClick={() => setStep(1)} className="h-11 rounded-none bg-[#d94f3d] px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-none hover:bg-[#ba3f31]">Continue <ChevronRight className="ml-2 h-3.5 w-3.5" /></Button><button onClick={() => setStep(1)} className="font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#a9aaa1] hover:text-[#f6efe2]">Skip this step</button><span className="ml-auto font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#858a80]">{favoriteIds.length}/3 chosen</span></div></div>
+        ) : (
+          <div className="flex flex-1 flex-col justify-center py-10"><p className="eyebrow"><span className="eyebrow-dot" />Set the mood</p><h1 className="mt-5 max-w-3xl font-serif text-[clamp(3.6rem,8vw,7.2rem)] leading-[0.83] tracking-[-0.075em]">What do you<br /><em>reach for?</em></h1><p className="mt-7 max-w-xl font-sans text-[15px] leading-[1.6] text-[#c3c5bb]">Choose up to three directions. Your watched history will take over and refine this initial signal as you use the room.</p><div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{tasteSignals.map((signal) => <button key={signal.id} onClick={() => toggleSignal(signal.id)} className={`min-h-36 border p-5 text-left transition-colors ${signalIds.includes(signal.id) ? "border-[#d94f3d] bg-[#2b312b]" : "border-[#f6efe2]/13 bg-[#1e241f] hover:border-[#f6efe2]/35"}`}><div className="flex items-start justify-between gap-4"><span className="font-serif text-[1.65rem] leading-[.95] tracking-[-0.045em]">{signal.label}</span>{signalIds.includes(signal.id) && <Check className="h-4 w-4 shrink-0 text-[#d94f3d]" />}</div><p className="mt-4 font-sans text-xs leading-[1.45] text-[#a9aaa1]">{signal.note}</p></button>)}</div><div className="mt-10 flex flex-wrap items-center gap-4"><Button onClick={finish} className="h-11 rounded-none bg-[#d94f3d] px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-none hover:bg-[#ba3f31]">Build my signal <Sparkles className="ml-2 h-3.5 w-3.5" /></Button><button onClick={() => setStep(0)} className="font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#a9aaa1] hover:text-[#f6efe2]">Back</button><button onClick={finish} className="font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#858a80] hover:text-[#f6efe2]">Skip for now</button><span className="ml-auto font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#858a80]">{signalIds.length}/3 chosen</span></div></div>
+        )}
+      </div>
+    </main>
+  );
+}
+
 export default function Home() {
   const [view, setView] = useState<View>("tonight");
   const [format, setFormat] = useState<Format>("movie");
   const [watched, setWatched] = useState<WatchedItem[]>(() => readStorage<WatchedItem[]>(WATCHED_KEY, []));
   const [skipped, setSkipped] = useState<string[]>(() => readStorage<string[]>(SKIPPED_KEY, []));
   const [watchLater, setWatchLater] = useState<WatchLaterItem[]>(() => readStorage<WatchLaterItem[]>(WATCH_LATER_KEY, []));
+  const [tasteProfile, setTasteProfile] = useState<TasteProfile | null>(() => readStorage<TasteProfile | null>(TASTE_PROFILE_KEY, null));
   const [currentId, setCurrentId] = useState<string>("");
   const [isChanging, setIsChanging] = useState(false);
   const movieDiscovery = trpc.catalogue.discover.useQuery({ format: "movie" }, { staleTime: 15 * 60 * 1000, retry: 1 });
@@ -73,14 +124,14 @@ export default function Home() {
     const selected = catalogue.find((title) => title.id === currentId);
     const selectedIsLive = currentId.startsWith("tmdb-");
     if (selected && selected.format === format && !watched.some((item) => item.id === selected.id) && !skipped.includes(selected.id) && !watchLater.some((item) => item.id === selected.id) && (!liveReady || selectedIsLive)) return selected;
-    return getRecommendation(format, watched, skipped, undefined, availableCatalogue);
-  }, [availableCatalogue, catalogue, currentId, format, liveReady, skipped, watchLater, watched]);
+    return getRecommendation(format, watched, skipped, undefined, availableCatalogue, tasteProfile ?? undefined);
+  }, [availableCatalogue, catalogue, currentId, format, liveReady, skipped, tasteProfile, watchLater, watched]);
 
   const archiveTitles = useMemo(
     () => watched.map((item) => archiveCatalogue.find((title) => title.id === item.id)).filter(Boolean) as Title[],
     [archiveCatalogue, watched],
   );
-  const signalSummary = useMemo(() => getSignalSummary(watched, archiveCatalogue), [archiveCatalogue, watched]);
+  const signalSummary = useMemo(() => getSignalSummary(watched, archiveCatalogue, tasteProfile ?? undefined), [archiveCatalogue, tasteProfile, watched]);
   const formatCount = catalogue.filter((title) => title.format === format).length;
 
   useEffect(() => {
@@ -109,7 +160,7 @@ export default function Home() {
     setWatchLater(nextWatchLater);
     window.localStorage.setItem(WATCH_LATER_KEY, JSON.stringify(nextWatchLater));
     const nextCatalogue = availableCatalogue.filter((title) => title.id !== recommendation.id);
-    const next = getRecommendation(format, nextWatched, skipped, recommendation.id, nextCatalogue);
+    const next = getRecommendation(format, nextWatched, skipped, recommendation.id, nextCatalogue, tasteProfile ?? undefined);
     if (next) transitionTo(next.id);
     toast.success("Added to your watched archive", { description: recommendation.title });
   }
@@ -119,13 +170,13 @@ export default function Home() {
     const nextSkipped = Array.from(new Set([...skipped, recommendation.id]));
     setSkipped(nextSkipped);
     window.localStorage.setItem(SKIPPED_KEY, JSON.stringify(nextSkipped));
-    const next = getRecommendation(format, watched, nextSkipped, recommendation.id, availableCatalogue);
+    const next = getRecommendation(format, watched, nextSkipped, recommendation.id, availableCatalogue, tasteProfile ?? undefined);
     if (next) transitionTo(next.id);
     toast("Passed for now", { description: "We’ll keep the signal moving." });
   }
 
   function surpriseMe() {
-    const next = getRecommendation(format, watched, skipped, recommendation?.id, availableCatalogue);
+    const next = getRecommendation(format, watched, skipped, recommendation?.id, availableCatalogue, tasteProfile ?? undefined);
     if (next) transitionTo(next.id);
   }
 
@@ -147,7 +198,7 @@ export default function Home() {
     setWatchLater(nextWatchLater);
     window.localStorage.setItem(WATCH_LATER_KEY, JSON.stringify(nextWatchLater));
     const nextCatalogue = availableCatalogue.filter((title) => title.id !== recommendation.id);
-    const next = getRecommendation(format, watched, skipped, recommendation.id, nextCatalogue);
+    const next = getRecommendation(format, watched, skipped, recommendation.id, nextCatalogue, tasteProfile ?? undefined);
     if (next) transitionTo(next.id);
     toast.success("Saved to Watch later", { description: recommendation.title });
   }
@@ -166,7 +217,17 @@ export default function Home() {
     setView("tonight");
   }
 
-  const hasHistory = watched.length > 0;
+  function completeOnboarding(profile: TasteProfile) {
+    setTasteProfile(profile);
+    window.localStorage.setItem(TASTE_PROFILE_KEY, JSON.stringify(profile));
+    setCurrentId("");
+    toast.success("Your opening signal is set", { description: "Your first recommendation now has a point of view." });
+  }
+
+  const hasHistory = watched.length > 0 || Boolean(tasteProfile?.genres.length || tasteProfile?.tags.length);
+  const matchReason = recommendation ? getMatchReason(recommendation, watched, tasteProfile ?? undefined) : "You’ve reached the end of this format’s active queue.";
+
+  if (!tasteProfile) return <Onboarding onComplete={completeOnboarding} />;
 
   return (
     <div className="dark-cinema min-h-screen overflow-x-hidden bg-[#111311] text-[#f6efe2]">
@@ -257,8 +318,8 @@ export default function Home() {
 
                 <aside className="pt-1 lg:pl-3">
                   <div className="why-note">
-                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{recommendation ? `${getMatchScore(recommendation, watched, archiveCatalogue)}%` : "—"}</span></div>
-                    <p className="font-serif text-[1.65rem] leading-[1.03] tracking-[-0.04em]">{recommendation ? `“${recommendation.reason}”` : "“You’ve reached the end of this format’s active queue.”"}</p>
+                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{recommendation ? `${getMatchScore(recommendation, watched, archiveCatalogue, tasteProfile ?? undefined)}%` : "—"}</span></div>
+                    <p className="font-serif text-[1.65rem] leading-[1.03] tracking-[-0.04em]">{recommendation ? `“${matchReason}”` : "“You’ve reached the end of this format’s active queue.”"}</p>
                     <div className="mt-7 h-px w-full bg-[#2d302d]/12" />
                     <p className="mt-4 font-sans text-[12px] leading-[1.55] text-[#777870]">{hasHistory ? "The more you watch, the more this little room starts to understand your taste." : "Start with a title. Reelwise will tune the next one around what you actually finish."}</p>
                   </div>

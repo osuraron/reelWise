@@ -1,6 +1,7 @@
-# Reelwise Dark Theme Todo
+# Reelwise Onboarding Todo
 
-- [x] Define a dark editorial palette with accessible text, borders, and accent states.
-- [x] Apply the dark theme across recommendations, archive, Watch Later, and feedback states.
-- [x] Verify live TMDB posters and interaction controls remain clear against dark surfaces.
-- [x] Verify desktop and mobile contrast, then re-run checks and save a checkpoint.
+- [x] Define a concise preference-seeding flow with favorite-title and taste-signal choices.
+- [x] Add persistent onboarding profile state and a dark-theme multi-step interface.
+- [x] Incorporate seeded genres and tags into live TMDB recommendation ranking and explanations.
+- [x] Verify first-run, skip, persistence, and responsive behavior.
+- [x] Re-run tests and build checks, then save the completed checkpoint.
