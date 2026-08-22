@@ -51,3 +51,7 @@ First skip-path verification: Skip this step advanced from favorite-title select
 Final skip-path verification: Skip for now completed onboarding with an empty persisted profile and landed on a valid live recommendation, *Avatar Aang: The Last Airbender*, with the neutral 78% explanation. Both onboarding steps are therefore optional and safe to bypass.
 
 Final QA reset: the temporary profile was cleared after validation, and the live preview now opens again at the first onboarding step for a clean first-run experience.
+
+Recommendation hierarchy verification: with a temporary seed profile, the live screen showed *Picked from your signal* directly above the main *One good choice* heading. The side-rail browsing copy, the “A recommendation for tonight” label, and the “More from the shelf / Keep the evening open” header copy were removed while the shelf cards remained available.
+
+Recommendation hierarchy QA: the stripped-back layout preserved legible navigation, signal-first hierarchy, recommendation controls, and shelf cards. The temporary seed profile was cleared after review so the QA browser returns to the clean onboarding entry point.

@@ -257,11 +257,6 @@ export default function Home() {
             <button onClick={() => setView("archive")} className={`side-nav-item ${view === "archive" ? "is-active" : ""}`}><Archive className="h-4 w-4" />Watched <span className="ml-auto tabular-nums text-[#96968f]">{watched.length}</span></button>
             <button onClick={() => setView("watchlist")} className={`side-nav-item ${view === "watchlist" ? "is-active" : ""}`}><Bookmark className="h-4 w-4" />Watch later <span className="ml-auto tabular-nums text-[#96968f]">{watchLater.length}</span></button>
           </nav>
-          <div className="space-y-4">
-            <SignalLine />
-            <p className="font-sans text-[11px] leading-[1.55] text-[#777870]">A little less browsing.<br />A little more watching.</p>
-            <button onClick={() => { setWatched([]); window.localStorage.removeItem(WATCHED_KEY); toast("Archive cleared"); }} className="font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#aaa99f] transition-colors hover:text-[#d94f3d]">Clear archive</button>
-          </div>
         </aside>
 
         <main className="min-w-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
@@ -279,7 +274,7 @@ export default function Home() {
           {view === "tonight" ? (
             <section className="animate-in fade-in duration-500" aria-labelledby="tonight-heading">
               <div className="mb-9 max-w-3xl">
-                <p className="eyebrow"><span className="eyebrow-dot" />A recommendation for tonight</p>
+                <p className="eyebrow"><span className="h-px w-6 bg-[#d94f3d]" />{hasHistory ? "Picked from your signal" : "A considered place to start"}</p>
                 <div className="mt-4 flex items-end justify-between gap-5">
                   <h1 id="tonight-heading" className="font-serif text-[clamp(3.8rem,8vw,7.4rem)] leading-[0.82] tracking-[-0.075em]">One good<br /><em>choice.</em></h1>
                   <button onClick={surpriseMe} className="group mb-1 hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">Surprise me <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-[-45deg]" /></button>
@@ -288,10 +283,7 @@ export default function Home() {
 
               <div className={`recommendation-spread ${isChanging ? "is-changing" : ""}`}>
                 <div className="relative min-w-0">
-                  <div className="mb-4 flex items-center justify-between gap-4">
-                    <p className="eyebrow"><span className="h-px w-6 bg-[#d94f3d]" />{hasHistory ? "Picked from your signal" : "A considered place to start"}</p>
-                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#9a9a91]">{format === "movie" ? "Movie 01" : "Series 01"}</span>
-                  </div>
+                  <div className="mb-4 flex justify-end"><span className="font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#9a9a91]">{format === "movie" ? "Movie 01" : "Series 01"}</span></div>
                   {recommendation && (
                     <div className="featured-card">
                       <div className="poster-wrap">
@@ -327,7 +319,7 @@ export default function Home() {
                 </aside>
               </div>
 
-              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="flex items-center justify-between gap-5"><div><p className="eyebrow mb-2">More from the shelf</p><p className="font-serif text-[1.7rem] tracking-[-0.04em]">Keep the evening open.</p></div><button onClick={() => setView("archive")} className="hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">See archive <ArrowUpRight className="h-3.5 w-3.5" /></button></div><div className="mt-6 grid gap-3 sm:grid-cols-3">{catalogue.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && !watchLater.some((item) => item.id === title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
+              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="grid gap-3 sm:grid-cols-3">{catalogue.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && !watchLater.some((item) => item.id === title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
             </section>
           ) : view === "archive" ? (
             <section className="animate-in fade-in duration-500" aria-labelledby="archive-heading">
