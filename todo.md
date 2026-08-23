@@ -19,3 +19,7 @@
 - [x] Add a concise credits block beneath the focused recommendation details.
 - [x] Add or update tests for live credits mapping and unavailable credits.
 - [x] Verify credits on desktop and mobile, then save a checkpoint.
+- [x] Inspect the current poster and credits layout for a balanced relocated credits treatment.
+- [x] Move director or creator and main cast details beneath the recommendation poster.
+- [x] Remove the previous text-column credits placement.
+- [x] Verify desktop and mobile poster-adjacent credits, then save a checkpoint.
