@@ -18,6 +18,12 @@ export type LiveTitle = {
   accent: string;
 };
 
+export type LiveCredits = {
+  primaryRole: "Director" | "Created by";
+  primaryNames: string[];
+  cast: string[];
+};
+
 type TmdbDiscoverResult = {
   id: number;
   title?: string;
@@ -32,6 +38,12 @@ type TmdbDiscoverResult = {
 };
 
 type TmdbDiscoverResponse = { results: TmdbDiscoverResult[] };
+
+type TmdbCreditsMember = { name?: string; job?: string; order?: number };
+type TmdbTitleDetails = {
+  created_by?: Array<{ name?: string }>;
+  credits?: { cast?: TmdbCreditsMember[]; crew?: TmdbCreditsMember[] };
+};
 
 const API_BASE = "https://api.themoviedb.org/3";
 const POSTER_BASE = "https://image.tmdb.org/t/p/w780";
@@ -54,9 +66,11 @@ const showGenres: Record<number, string> = {
 };
 
 const cache = new Map<LiveFormat, { expiresAt: number; titles: LiveTitle[] }>();
+const creditsCache = new Map<string, { expiresAt: number; credits: LiveCredits }>();
 
 export function clearTmdbCache() {
   cache.clear();
+  creditsCache.clear();
 }
 
 function formatGenres(ids: number[] | undefined, format: LiveFormat) {
@@ -90,6 +104,26 @@ function asLiveTitle(item: TmdbDiscoverResult, format: LiveFormat, index: number
   };
 }
 
+export function mapLiveCredits(details: TmdbTitleDetails, format: LiveFormat): LiveCredits {
+  const cast = [...(details.credits?.cast ?? [])]
+    .sort((left, right) => (left.order ?? Number.MAX_SAFE_INTEGER) - (right.order ?? Number.MAX_SAFE_INTEGER))
+    .map((member) => member.name?.trim())
+    .filter((name): name is string => Boolean(name))
+    .filter((name, index, names) => names.indexOf(name) === index)
+    .slice(0, 3);
+  const directors = (details.credits?.crew ?? [])
+    .filter((member) => member.job === "Director")
+    .map((member) => member.name?.trim())
+    .filter((name): name is string => Boolean(name));
+  const creators = (details.created_by ?? [])
+    .map((member) => member.name?.trim())
+    .filter((name): name is string => Boolean(name));
+
+  return format === "movie"
+    ? { primaryRole: "Director", primaryNames: directors.slice(0, 2), cast }
+    : { primaryRole: "Created by", primaryNames: (creators.length ? creators : directors).slice(0, 2), cast };
+}
+
 async function discoverPage(format: LiveFormat, page: number): Promise<TmdbDiscoverResponse> {
   if (!ENV.tmdbApiKey) throw new Error("TMDB_API_KEY is not configured");
 
@@ -106,6 +140,25 @@ async function discoverPage(format: LiveFormat, page: number): Promise<TmdbDisco
   const response = await fetch(`${API_BASE}/${endpoint}?${query.toString()}`);
   if (!response.ok) throw new Error(`TMDB discovery failed with ${response.status}`);
   return (await response.json()) as TmdbDiscoverResponse;
+}
+
+export async function discoverLiveCredits(format: LiveFormat, tmdbId: number): Promise<LiveCredits> {
+  if (!ENV.tmdbApiKey) throw new Error("TMDB_API_KEY is not configured");
+  const cacheKey = `${format}:${tmdbId}`;
+  const existing = creditsCache.get(cacheKey);
+  if (existing && existing.expiresAt > Date.now()) return existing.credits;
+
+  const endpoint = format === "movie" ? `movie/${tmdbId}` : `tv/${tmdbId}`;
+  const query = new URLSearchParams({
+    api_key: ENV.tmdbApiKey,
+    language: "en-US",
+    append_to_response: "credits",
+  });
+  const response = await fetch(`${API_BASE}/${endpoint}?${query.toString()}`);
+  if (!response.ok) throw new Error(`TMDB credits failed with ${response.status}`);
+  const credits = mapLiveCredits((await response.json()) as TmdbTitleDetails, format);
+  creditsCache.set(cacheKey, { credits, expiresAt: Date.now() + CACHE_MS });
+  return credits;
 }
 
 export async function discoverLiveTitles(format: LiveFormat): Promise<LiveTitle[]> {

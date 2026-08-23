@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { clearTmdbCache, discoverLiveTitles } from "./tmdb";
+import { clearTmdbCache, discoverLiveTitles, mapLiveCredits } from "./tmdb";
 
 describe("TMDB configuration", () => {
   it("authenticates with the configured server-side API key", async () => {
@@ -22,6 +22,20 @@ describe("TMDB configuration", () => {
     expect(titles.some((title) => Boolean(title.poster))).toBe(true);
     expect(titles.every((title) => typeof title.rating === "number" && title.rating > 0 && title.rating <= 10)).toBe(true);
   }, 20_000);
+
+  it("maps main cast and accurate movie or series lead credits", () => {
+    const details = {
+      created_by: [{ name: "Series Creator" }],
+      credits: {
+        crew: [{ name: "Film Director", job: "Director" }],
+        cast: [{ name: "Second Lead", order: 1 }, { name: "First Lead", order: 0 }, { name: "First Lead", order: 2 }],
+      },
+    };
+
+    expect(mapLiveCredits(details, "movie")).toEqual({ primaryRole: "Director", primaryNames: ["Film Director"], cast: ["First Lead", "Second Lead"] });
+    expect(mapLiveCredits({ credits: {} }, "show")).toEqual({ primaryRole: "Created by", primaryNames: [], cast: [] });
+    expect(mapLiveCredits(details, "show")).toEqual({ primaryRole: "Created by", primaryNames: ["Series Creator"], cast: ["First Lead", "Second Lead"] });
+  });
 
   it("reports a clear failure when TMDB is unavailable", async () => {
     const originalFetch = globalThis.fetch;

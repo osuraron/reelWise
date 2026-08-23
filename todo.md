@@ -14,3 +14,8 @@
 - [x] Add a compact rating indicator to the focused recommendation’s top-right controls.
 - [x] Add or update tests for live rating mapping and unavailable ratings.
 - [x] Verify rating visibility on desktop and mobile, then save a checkpoint.
+- [x] Inspect TMDB detail and credits metadata availability for movies and TV shows.
+- [x] Extend live title mapping with source-backed director and principal cast fields.
+- [x] Add a concise credits block beneath the focused recommendation details.
+- [x] Add or update tests for live credits mapping and unavailable credits.
+- [x] Verify credits on desktop and mobile, then save a checkpoint.

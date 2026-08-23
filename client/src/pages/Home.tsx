@@ -227,6 +227,12 @@ export default function Home() {
   const hasHistory = watched.length > 0 || Boolean(tasteProfile?.genres.length || tasteProfile?.tags.length);
   const matchReason = recommendation ? getMatchReason(recommendation, watched, tasteProfile ?? undefined) : "You’ve reached the end of this format’s active queue.";
   const ratingLabel = recommendation ? formatRating(recommendation.rating) : null;
+  const liveCreditsInput = useMemo(() => {
+    const match = recommendation?.id.match(/^tmdb-(movie|show)-(\d+)$/);
+    return match ? { format: match[1] as Format, tmdbId: Number(match[2]) } : null;
+  }, [recommendation?.id]);
+  const creditsQuery = trpc.catalogue.credits.useQuery(liveCreditsInput ?? { format: "movie", tmdbId: 1 }, { enabled: Boolean(liveCreditsInput), staleTime: 15 * 60 * 1000, retry: 1 });
+  const credits = creditsQuery.data;
 
   if (!tasteProfile) return <Onboarding onComplete={completeOnboarding} />;
 
@@ -290,6 +296,7 @@ export default function Home() {
                           <h2 className="max-w-[560px] font-serif text-[clamp(2.8rem,5.5vw,5.9rem)] leading-[0.87] tracking-[-0.07em]">{recommendation.title}</h2>
                           {recommendation.director && <p className="mt-5 font-sans text-xs text-[#777870]">A film by <span className="text-[#2d302d]">{recommendation.director}</span></p>}
                           <p className="mt-7 max-w-[420px] font-sans text-[15px] leading-[1.55] text-[#60625c]">{recommendation.description}</p>
+                          {credits && (credits.primaryNames.length > 0 || credits.cast.length > 0) && <dl className="mt-7 grid max-w-[500px] gap-4 border-t border-[#2d302d]/12 pt-5 sm:grid-cols-2"><div>{credits.primaryNames.length > 0 && <><dt className="font-sans text-[9px] font-bold uppercase tracking-[0.18em] text-[#858a80]">{credits.primaryRole}</dt><dd className="mt-2 font-sans text-[12px] leading-[1.5] text-[#c3c5bb]">{credits.primaryNames.join(" · ")}</dd></>}</div><div>{credits.cast.length > 0 && <><dt className="font-sans text-[9px] font-bold uppercase tracking-[0.18em] text-[#858a80]">Main cast</dt><dd className="mt-2 font-sans text-[12px] leading-[1.5] text-[#c3c5bb]">{credits.cast.join(" · ")}</dd></>}</div></dl>}
                         </div>
                         <div className="mt-10 flex flex-wrap items-center gap-3">
                           <Button onClick={markWatched} className="h-11 rounded-none bg-[#d94f3d] px-5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-none transition-all hover:bg-[#ba3f31] active:scale-[0.97]"><Check className="mr-2 h-3.5 w-3.5" />I watched this</Button>

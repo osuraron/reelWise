@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { discoverLiveTitles } from "./tmdb";
+import { discoverLiveCredits, discoverLiveTitles } from "./tmdb";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -22,6 +22,9 @@ export const appRouter = router({
     discover: publicProcedure
       .input(z.object({ format: z.enum(["movie", "show"]) }))
       .query(({ input }) => discoverLiveTitles(input.format)),
+    credits: publicProcedure
+      .input(z.object({ format: z.enum(["movie", "show"]), tmdbId: z.number().int().positive() }))
+      .query(({ input }) => discoverLiveCredits(input.format, input.tmdbId)),
   }),
 
   // TODO: add feature routers here, e.g.
