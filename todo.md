@@ -30,3 +30,6 @@
 - [x] Inspect the existing Reelwise fit markup and select a balanced card-top-right placement.
 - [x] Replace the inline fit label with a larger percentage-only marker in the main card’s top-right.
 - [x] Verify desktop and mobile percentage-marker placement, then save a checkpoint.
+- [x] Inspect the current percentage-marker placement and its surrounding card spacing.
+- [x] Remove the personalized percentage marker from the recommendation card.
+- [x] Verify the cleaned desktop and mobile recommendation card, then save a checkpoint.
