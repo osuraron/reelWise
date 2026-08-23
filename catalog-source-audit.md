@@ -63,3 +63,5 @@ Focused-layout mobile QA: the latest mobile render remains vertically readable, 
 Recommendation alignment verification: after moving the desktop Movies/TV shows control into the header, the recommendation’s Movie marker and card begin at the same vertical level as the Your room rail content, eliminating the former in-column format-control gap. The header controls, recommendation actions, Why this panel, and signal summary remain visible.
 
 Alignment mobile QA: the mobile first-run surface remains visually stable. The format-control relocation is desktop-only, leaving the original mobile layout and its responsive control treatment intact.
+
+Final vertical-spacing verification: reducing the desktop top padding from 48px to 28px raises the recommendation marker/card, Your room rail, and right-hand Why this panel together toward the header. A temporary preference profile rendered the live recommendation successfully, and the three areas now share the same tightened upper alignment with no overlap or lost controls. The temporary profile was cleared immediately after capture; the preview remains on clean first-run onboarding.

@@ -251,7 +251,7 @@ export default function Home() {
       </header>
 
       <div className="relative z-10 mx-auto grid min-h-[calc(100vh-89px)] max-w-[1500px] lg:grid-cols-[190px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-[#2d302d]/10 px-6 py-10 lg:flex lg:flex-col lg:justify-between">
+        <aside className="hidden border-r border-[#2d302d]/10 px-6 py-10 lg:flex lg:flex-col lg:justify-between lg:pt-7">
           <nav className="space-y-2" aria-label="Primary">
             <p className="mb-5 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-[#95958d]">Your room</p>
             <button onClick={() => setView("tonight")} className={`side-nav-item ${view === "tonight" ? "is-active" : ""}`}><Compass className="h-4 w-4" />Tonight</button>
@@ -260,7 +260,7 @@ export default function Home() {
           </nav>
         </aside>
 
-        <main className="min-w-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+        <main className="min-w-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:pb-12 lg:pt-7">
           <div className="mb-8 flex items-center justify-between gap-5 border-b border-[#2d302d]/10 pb-5 lg:hidden">
             <div className="flex items-center gap-1 rounded-full border border-[#2d302d]/12 p-1">
               <button onClick={() => chooseFormat("movie")} className={`format-tab ${format === "movie" ? "is-active" : ""}`}><Film className="h-3.5 w-3.5" />Movies</button>
