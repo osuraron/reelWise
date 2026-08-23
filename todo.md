@@ -23,3 +23,7 @@
 - [x] Move director or creator and main cast details beneath the recommendation poster.
 - [x] Remove the previous text-column credits placement.
 - [x] Verify desktop and mobile poster-adjacent credits, then save a checkpoint.
+- [x] Inspect the current poster caption and personalized match-score UI placement.
+- [x] Remove the Reelwise selection and year caption beneath the poster.
+- [x] Add the personalized Reelwise fit score above the focused title.
+- [x] Verify the simplified poster and score hierarchy on desktop and mobile, then save a checkpoint.

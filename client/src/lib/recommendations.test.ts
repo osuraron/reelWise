@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRating, getRecommendation, type TasteProfile, type Title } from "./recommendations";
+import { formatRating, getMatchScore, getRecommendation, type TasteProfile, type Title } from "./recommendations";
 
 const profile: TasteProfile = {
   favoriteIds: [],
@@ -16,6 +16,7 @@ const catalogue: Title[] = [
 describe("seeded recommendations", () => {
   it("prioritizes titles aligned to onboarding taste signals", () => {
     expect(getRecommendation("movie", [], [], undefined, catalogue, profile)?.id).toBe("science");
+    expect(getMatchScore(catalogue[1]!, [], catalogue, profile)).toBe(85);
   });
 });
 

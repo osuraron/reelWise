@@ -226,6 +226,7 @@ export default function Home() {
 
   const hasHistory = watched.length > 0 || Boolean(tasteProfile?.genres.length || tasteProfile?.tags.length);
   const matchReason = recommendation ? getMatchReason(recommendation, watched, tasteProfile ?? undefined) : "You’ve reached the end of this format’s active queue.";
+  const fitScore = recommendation ? getMatchScore(recommendation, watched, archiveCatalogue, tasteProfile ?? undefined) : null;
   const ratingLabel = recommendation ? formatRating(recommendation.rating) : null;
   const liveCreditsInput = useMemo(() => {
     const match = recommendation?.id.match(/^tmdb-(movie|show)-(\d+)$/);
@@ -288,12 +289,12 @@ export default function Home() {
                     <div className="featured-card">
                       <div className="poster-wrap">
                         <PosterArt key={recommendation.id} title={recommendation} className="aspect-[4/5] w-full" />
-                        <div className="poster-caption"><span>Reelwise selection</span><span>{recommendation.year}</span></div>
                         {credits && (credits.primaryNames.length > 0 || credits.cast.length > 0) && <dl className="border-t border-[#f6efe2]/12 px-2 pb-4 pt-3"><div>{credits.primaryNames.length > 0 && <><dt className="font-sans text-[8px] font-bold uppercase tracking-[0.16em] text-[#858a80]">{credits.primaryRole}</dt><dd className="mt-1.5 font-sans text-[11px] leading-[1.45] text-[#c3c5bb]">{credits.primaryNames.join(" · ")}</dd></>}</div><div className={credits.primaryNames.length > 0 ? "mt-3" : ""}>{credits.cast.length > 0 && <><dt className="font-sans text-[8px] font-bold uppercase tracking-[0.16em] text-[#858a80]">Main cast</dt><dd className="mt-1.5 font-sans text-[11px] leading-[1.45] text-[#c3c5bb]">{credits.cast.join(" · ")}</dd></>}</div></dl>}
                       </div>
                       <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
                         <div>
                           <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#85867e]"><span>{recommendation.year}</span><span className="h-1 w-1 rounded-full bg-[#d94f3d]" /><span>{recommendation.runtime}</span><span className="h-1 w-1 rounded-full bg-[#b2b0a5]" /><span>{recommendation.genres[0]}</span></div>
+                          {fitScore !== null && <div className="mb-4 flex items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#b9b9af]"><span className="h-1.5 w-1.5 rounded-full bg-[#d94f3d]" /><span>Reelwise fit</span><span className="text-[#d94f3d]">{fitScore}%</span></div>}
                           <h2 className="max-w-[560px] font-serif text-[clamp(2.8rem,5.5vw,5.9rem)] leading-[0.87] tracking-[-0.07em]">{recommendation.title}</h2>
                           {recommendation.director && <p className="mt-5 font-sans text-xs text-[#777870]">A film by <span className="text-[#2d302d]">{recommendation.director}</span></p>}
                           <p className="mt-7 max-w-[420px] font-sans text-[15px] leading-[1.55] text-[#60625c]">{recommendation.description}</p>
@@ -311,7 +312,7 @@ export default function Home() {
 
                 <aside className="pt-1 lg:pl-3">
                   <div className="why-note">
-                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{recommendation ? `${getMatchScore(recommendation, watched, archiveCatalogue, tasteProfile ?? undefined)}%` : "—"}</span></div>
+                    <div className="mb-5 flex items-center justify-between"><p className="eyebrow"><Sparkles className="h-3.5 w-3.5 text-[#d94f3d]" />Why this</p><span className="font-sans text-[10px] font-bold text-[#d94f3d]">{fitScore !== null ? `${fitScore}%` : "—"}</span></div>
                     <p className="font-serif text-[1.65rem] leading-[1.03] tracking-[-0.04em]">{recommendation ? `“${matchReason}”` : "“You’ve reached the end of this format’s active queue.”"}</p>
                     <div className="mt-7 h-px w-full bg-[#2d302d]/12" />
                     <p className="mt-4 font-sans text-[12px] leading-[1.55] text-[#777870]">{hasHistory ? "The more you watch, the more this little room starts to understand your taste." : "Start with a title. Reelwise will tune the next one around what you actually finish."}</p>
