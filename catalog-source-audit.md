@@ -55,3 +55,7 @@ Final QA reset: the temporary profile was cleared after validation, and the live
 Recommendation hierarchy verification: with a temporary seed profile, the live screen showed *Picked from your signal* directly above the main *One good choice* heading. The side-rail browsing copy, the “A recommendation for tonight” label, and the “More from the shelf / Keep the evening open” header copy were removed while the shelf cards remained available.
 
 Recommendation hierarchy QA: the stripped-back layout preserved legible navigation, signal-first hierarchy, recommendation controls, and shelf cards. The temporary seed profile was cleared after review so the QA browser returns to the clean onboarding entry point.
+
+Focused recommendation verification: with a temporary seed profile, the live layout showed only the current title card, format marker, Surprise me control, actions, Why this note, and current signal. The One good choice masthead, the Picked from your signal label, and the below-card supplemental title shelf were absent.
+
+Focused-layout mobile QA: the latest mobile render remains vertically readable, with no horizontal overflow or layout breakage after removing the recommendation masthead and supplemental shelf.

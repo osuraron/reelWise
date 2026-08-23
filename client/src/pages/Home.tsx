@@ -272,18 +272,10 @@ export default function Home() {
           {liveError && !liveReady && <div role="status" className="mb-6 border-l-2 border-[#d94f3d] bg-[#f8f2e9] px-4 py-3 font-sans text-xs leading-[1.55] text-[#666861]">The live catalogue is temporarily unavailable. Reelwise is showing the local shelf while it reconnects.</div>}
 
           {view === "tonight" ? (
-            <section className="animate-in fade-in duration-500" aria-labelledby="tonight-heading">
-              <div className="mb-9 max-w-3xl">
-                <p className="eyebrow"><span className="h-px w-6 bg-[#d94f3d]" />{hasHistory ? "Picked from your signal" : "A considered place to start"}</p>
-                <div className="mt-4 flex items-end justify-between gap-5">
-                  <h1 id="tonight-heading" className="font-serif text-[clamp(3.8rem,8vw,7.4rem)] leading-[0.82] tracking-[-0.075em]">One good<br /><em>choice.</em></h1>
-                  <button onClick={surpriseMe} className="group mb-1 hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">Surprise me <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-[-45deg]" /></button>
-                </div>
-              </div>
-
+            <section className="animate-in fade-in duration-500" aria-label="Current recommendation">
               <div className={`recommendation-spread ${isChanging ? "is-changing" : ""}`}>
                 <div className="relative min-w-0">
-                  <div className="mb-4 flex justify-end"><span className="font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#9a9a91]">{format === "movie" ? "Movie 01" : "Series 01"}</span></div>
+                  <div className="mb-4 flex items-center justify-between"><span className="font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#9a9a91]">{format === "movie" ? "Movie" : "Series"}</span><button onClick={surpriseMe} className="group hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">Surprise me <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-[-45deg]" /></button></div>
                   {recommendation && (
                     <div className="featured-card">
                       <div className="poster-wrap">
@@ -319,7 +311,6 @@ export default function Home() {
                 </aside>
               </div>
 
-              <div className="mt-14 border-t border-[#2d302d]/10 pt-6"><div className="grid gap-3 sm:grid-cols-3">{catalogue.filter((title) => title.format === format && title.id !== recommendation?.id && !watched.some((item) => item.id === title.id) && !skipped.includes(title.id) && !watchLater.some((item) => item.id === title.id)).slice(0, 3).map((title) => <button key={title.id} onClick={() => transitionTo(title.id)} className="shelf-card group text-left"><div className={`shelf-thumb bg-gradient-to-br ${title.palette}`}>{title.poster && <img src={title.poster} alt="" className="h-full w-full object-cover opacity-85" />}<span className="absolute bottom-3 left-3 right-3 font-serif text-[1.65rem] leading-[0.85] tracking-[-0.05em] text-white drop-shadow-sm">{title.title}</span></div><div className="flex items-center justify-between pt-3"><span className="font-sans text-[11px] text-[#666861]">{title.genres[0]} · {title.year}</span><ChevronRight className="h-3.5 w-3.5 text-[#9a9a91] transition-transform group-hover:translate-x-1 group-hover:text-[#d94f3d]" /></div></button>)}</div></div>
             </section>
           ) : view === "archive" ? (
             <section className="animate-in fade-in duration-500" aria-labelledby="archive-heading">
