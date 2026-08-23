@@ -238,6 +238,7 @@ export default function Home() {
             <span className="brand-mark"><img src="/manus-storage/reelwise-signal-glyph_882a2283.png" alt="" /></span>
             <span className="font-serif text-[1.55rem] leading-none tracking-[-0.05em]">reel<span className="text-[#d94f3d]">/</span>wise</span>
           </button>
+          {view === "tonight" && <div className="hidden items-center gap-1 rounded-full border border-[#2d302d]/12 p-1 lg:flex"><button onClick={() => chooseFormat("movie")} className={`format-tab ${format === "movie" ? "is-active" : ""}`}><Film className="h-3.5 w-3.5" />Movies</button><button onClick={() => chooseFormat("show")} className={`format-tab ${format === "show" ? "is-active" : ""}`}><Tv className="h-3.5 w-3.5" />TV shows</button></div>}
           <div className="hidden items-center gap-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#72736d] sm:flex">
             <span>Personal screening room</span>
             <span className="h-1.5 w-1.5 rounded-full bg-[#d94f3d]" />
@@ -260,7 +261,7 @@ export default function Home() {
         </aside>
 
         <main className="min-w-0 px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-          <div className="mb-8 flex items-center justify-between gap-5 border-b border-[#2d302d]/10 pb-5">
+          <div className="mb-8 flex items-center justify-between gap-5 border-b border-[#2d302d]/10 pb-5 lg:hidden">
             <div className="flex items-center gap-1 rounded-full border border-[#2d302d]/12 p-1">
               <button onClick={() => chooseFormat("movie")} className={`format-tab ${format === "movie" ? "is-active" : ""}`}><Film className="h-3.5 w-3.5" />Movies</button>
               <button onClick={() => chooseFormat("show")} className={`format-tab ${format === "show" ? "is-active" : ""}`}><Tv className="h-3.5 w-3.5" />TV shows</button>

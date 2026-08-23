@@ -1,6 +1,6 @@
-# Reelwise Focused Recommendation Todo
+# Reelwise Recommendation Alignment Todo
 
-- [x] Remove the One good choice masthead and Picked from your signal label.
-- [x] Remove the supplemental below-card movie shelf.
-- [x] Preserve the current recommendation metadata, actions, and explanation panel.
-- [x] Verify desktop/mobile focus, run checks, and save a checkpoint.
+- [x] Inspect the current recommendation container and the Your room rail alignment.
+- [x] Raise the focused recommendation component to align with the Your room area on desktop.
+- [x] Preserve appropriate spacing and controls on mobile.
+- [x] Verify the revised positioning, run checks, and save a checkpoint.

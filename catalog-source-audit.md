@@ -59,3 +59,7 @@ Recommendation hierarchy QA: the stripped-back layout preserved legible navigati
 Focused recommendation verification: with a temporary seed profile, the live layout showed only the current title card, format marker, Surprise me control, actions, Why this note, and current signal. The One good choice masthead, the Picked from your signal label, and the below-card supplemental title shelf were absent.
 
 Focused-layout mobile QA: the latest mobile render remains vertically readable, with no horizontal overflow or layout breakage after removing the recommendation masthead and supplemental shelf.
+
+Recommendation alignment verification: after moving the desktop Movies/TV shows control into the header, the recommendation’s Movie marker and card begin at the same vertical level as the Your room rail content, eliminating the former in-column format-control gap. The header controls, recommendation actions, Why this panel, and signal summary remain visible.
+
+Alignment mobile QA: the mobile first-run surface remains visually stable. The format-control relocation is desktop-only, leaving the original mobile layout and its responsive control treatment intact.
