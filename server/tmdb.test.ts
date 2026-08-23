@@ -20,6 +20,7 @@ describe("TMDB configuration", () => {
     expect(titles.length).toBeGreaterThan(40);
     expect(titles.every((title) => title.id.startsWith("tmdb-movie-"))).toBe(true);
     expect(titles.some((title) => Boolean(title.poster))).toBe(true);
+    expect(titles.every((title) => typeof title.rating === "number" && title.rating > 0 && title.rating <= 10)).toBe(true);
   }, 20_000);
 
   it("reports a clear failure when TMDB is unavailable", async () => {

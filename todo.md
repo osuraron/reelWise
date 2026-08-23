@@ -10,3 +10,7 @@
 - [x] Reduce the featured recommendation card’s desktop right-side width.
 - [x] Shift the desktop Why this panel left into the recovered space.
 - [x] Verify the refined desktop layout, preserve mobile behavior, and save a checkpoint.
+- [x] Inspect the live title model and catalogue mapper for an available rating field.
+- [x] Add a compact rating indicator to the focused recommendation’s top-right controls.
+- [x] Add or update tests for live rating mapping and unavailable ratings.
+- [x] Verify rating visibility on desktop and mobile, then save a checkpoint.

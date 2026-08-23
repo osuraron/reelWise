@@ -7,6 +7,7 @@ export type Title = {
   format: Format;
   title: string;
   year: number;
+  rating?: number;
   runtime: string;
   genres: string[];
   tags: string[];
@@ -389,6 +390,11 @@ export const titles: Title[] = [
 
 export type WatchedItem = { id: string; watchedAt: string };
 export type TasteProfile = { favoriteIds: string[]; genres: string[]; tags: string[]; completedAt: string };
+
+export function formatRating(rating?: number) {
+  if (typeof rating !== "number" || !Number.isFinite(rating) || rating <= 0) return null;
+  return rating.toFixed(1);
+}
 
 export function scoreTitle(title: Title, watched: WatchedItem[], skipped: string[], catalogue: Title[] = titles, profile?: TasteProfile) {
   const watchedTitles = watched.map((item) => catalogue.find((candidate) => candidate.id === item.id)).filter(Boolean) as Title[];

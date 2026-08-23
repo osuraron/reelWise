@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRecommendation, type TasteProfile, type Title } from "./recommendations";
+import { formatRating, getRecommendation, type TasteProfile, type Title } from "./recommendations";
 
 const profile: TasteProfile = {
   favoriteIds: [],
@@ -19,3 +19,10 @@ describe("seeded recommendations", () => {
   });
 });
 
+describe("rating presentation", () => {
+  it("formats usable catalogue ratings and omits unavailable values", () => {
+    expect(formatRating(7.46)).toBe("7.5");
+    expect(formatRating()).toBeNull();
+    expect(formatRating(0)).toBeNull();
+  });
+});

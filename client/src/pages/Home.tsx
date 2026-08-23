@@ -1,11 +1,11 @@
 /* Soft Signal style reminder: an asymmetric editorial spread, warm paper surfaces, restrained signal red, and recommendation-first hierarchy. */
 
 import { useEffect, useMemo, useState } from "react";
-import { Archive, ArrowUpRight, Bookmark, Check, ChevronRight, Compass, Film, Library, RotateCcw, Sparkles, Tv, X } from "lucide-react";
+import { Archive, ArrowUpRight, Bookmark, Check, ChevronRight, Compass, Film, Library, RotateCcw, Sparkles, Star, Tv, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { getMatchReason, getMatchScore, getRecommendation, getSignalSummary, titles, type Format, type TasteProfile, type Title, type WatchedItem } from "@/lib/recommendations";
+import { formatRating, getMatchReason, getMatchScore, getRecommendation, getSignalSummary, titles, type Format, type TasteProfile, type Title, type WatchedItem } from "@/lib/recommendations";
 
 const WATCHED_KEY = "reelwise-watched";
 const SKIPPED_KEY = "reelwise-skipped";
@@ -226,6 +226,7 @@ export default function Home() {
 
   const hasHistory = watched.length > 0 || Boolean(tasteProfile?.genres.length || tasteProfile?.tags.length);
   const matchReason = recommendation ? getMatchReason(recommendation, watched, tasteProfile ?? undefined) : "You’ve reached the end of this format’s active queue.";
+  const ratingLabel = recommendation ? formatRating(recommendation.rating) : null;
 
   if (!tasteProfile) return <Onboarding onComplete={completeOnboarding} />;
 
@@ -276,7 +277,7 @@ export default function Home() {
             <section className="animate-in fade-in duration-500" aria-label="Current recommendation">
               <div className={`recommendation-spread ${isChanging ? "is-changing" : ""}`}>
                 <div className="relative min-w-0">
-                  <div className="mb-4 flex items-center justify-between"><span className="font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#9a9a91]">{format === "movie" ? "Movie" : "Series"}</span><button onClick={surpriseMe} className="group hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">Surprise me <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-[-45deg]" /></button></div>
+                  <div className="mb-4 flex items-center justify-between gap-4"><span className="font-sans text-[10px] font-bold uppercase tracking-[0.17em] text-[#9a9a91]">{format === "movie" ? "Movie" : "Series"}</span><div className="flex items-center gap-3 sm:gap-4">{ratingLabel && <span aria-label={`TMDB rating ${ratingLabel} out of 10`} className="inline-flex items-center gap-1.5 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-[#b9b9af]"><Star className="h-3.5 w-3.5 fill-[#d94f3d] text-[#d94f3d]" aria-hidden="true" /><span>TMDB {ratingLabel}</span></span>}<button onClick={surpriseMe} className="group hidden items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#777870] transition-colors hover:text-[#d94f3d] sm:flex">Surprise me <RotateCcw className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-[-45deg]" /></button></div></div>
                   {recommendation && (
                     <div className="featured-card">
                       <div className="poster-wrap">

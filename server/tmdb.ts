@@ -7,6 +7,7 @@ export type LiveTitle = {
   format: LiveFormat;
   title: string;
   year: number;
+  rating?: number;
   runtime: string;
   genres: string[];
   tags: string[];
@@ -77,6 +78,7 @@ function asLiveTitle(item: TmdbDiscoverResult, format: LiveFormat, index: number
     format,
     title,
     year,
+    rating: typeof item.vote_average === "number" && item.vote_average > 0 ? Math.round(item.vote_average * 10) / 10 : undefined,
     runtime: format === "movie" ? "Feature" : "Series",
     genres,
     tags: [...genres.map((genre) => genre.toLowerCase()), "live-discovery", year >= 2020 ? "current" : "essential"],
