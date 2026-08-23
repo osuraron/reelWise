@@ -27,3 +27,6 @@
 - [x] Remove the Reelwise selection and year caption beneath the poster.
 - [x] Add the personalized Reelwise fit score above the focused title.
 - [x] Verify the simplified poster and score hierarchy on desktop and mobile, then save a checkpoint.
+- [x] Inspect the existing Reelwise fit markup and select a balanced card-top-right placement.
+- [x] Replace the inline fit label with a larger percentage-only marker in the main card’s top-right.
+- [x] Verify desktop and mobile percentage-marker placement, then save a checkpoint.
