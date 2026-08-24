@@ -33,3 +33,7 @@
 - [x] Inspect the current percentage-marker placement and its surrounding card spacing.
 - [x] Remove the personalized percentage marker from the recommendation card.
 - [x] Verify the cleaned desktop and mobile recommendation card, then save a checkpoint.
+- [x] Inspect the current dark visual tokens and surface colors.
+- [x] Deepen app, panel, card, and navigation surfaces to a clean near-black palette.
+- [x] Preserve warm editorial text, signal-red accents, and accessible contrast.
+- [x] Verify near-black dark mode on recommendation and onboarding views, then save a checkpoint.
