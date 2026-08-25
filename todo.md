@@ -62,3 +62,12 @@
 - [x] Compare the latest current Manus workspace with GitHub master.
 - [x] Commit and push any remaining current workspace changes to GitHub master.
 - [x] Confirm the final synchronized branch and commit.
+- [x] Locate the first build-stopping or runtime error in the new Vercel log.
+- [x] Identify the Vercel runtime incompatibility and choose the minimum adaptation.
+- [x] Implement and validate the deployment compatibility correction.
+- [x] Save a checkpoint with updated Vercel redeploy guidance.
+- [x] Inspect the deployed live-catalogue request path and fallback behavior.
+- [x] Identify whether TMDB configuration or the Vercel serverless API path is missing.
+- [x] Implement and validate a Vercel-compatible live catalogue API route.
+- [x] Document required Vercel environment variables and redeploy steps.
+- [x] Save a checkpoint and push the Vercel live-catalogue API correction to GitHub master.

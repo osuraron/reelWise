@@ -22,11 +22,23 @@ Set Vercel’s **Production Branch** to the branch that contains the latest `pac
 
 On a deployment details page, compare the deployed commit with the newest Git commit that includes those files. If the build log still mentions `/manus-storage/reelwise-paper-texture_08dcbd0b.jpg` or `%VITE_ANALYTICS_ENDPOINT%`, Vercel is building an older commit or the wrong root directory; neither reference exists in the current source.
 
-## Runtime compatibility
+## Live catalogue API on Vercel
 
-The successful build produces static client assets in `dist/public` and a Node/Express server bundle at `dist/index.js`. The current server expects a persistent Node process and server-side environment variables for TMDB, OAuth, and data services. A standard Vercel static deployment will not provide the existing Express/tRPC runtime without an additional serverless-adapter conversion.
+The project includes a Vercel catch-all serverless function at `api/trpc/[...trpc].ts`. It routes the browser’s existing `/api/trpc/catalogue.discover` and `/api/trpc/catalogue.credits` requests to the shared tRPC router, allowing live TMDB movie and TV discovery rather than the local fallback catalogue.
 
-For the current full experience, use the project’s built-in hosting, which supports custom domains. If you continue with Vercel, treat this change as a **build compatibility fix** first; the server must be converted to Vercel functions and the required private environment variables configured before a Vercel deployment can support live recommendations.
+In Vercel **Settings → Environment Variables**, add the following for both **Production** and **Preview** environments:
+
+| Variable | Required value |
+|---|---|
+| `TMDB_API_KEY` | Your existing private TMDB API key |
+
+Do not add this key with a `VITE_` prefix and do not expose it in client-side source. Once saved, redeploy so the serverless function receives the secret.
+
+## Remaining runtime compatibility
+
+The successful build produces static client assets in `dist/public` and a Node/Express server bundle at `dist/index.js`. The live catalogue uses the dedicated Vercel tRPC function above. Other server features—such as the current Manus OAuth, database, storage-proxy, and notification integrations—still expect their original private runtime configuration and are not required for public TMDB discovery.
+
+For the current full experience, built-in hosting remains the simplest option and supports custom domains. If you continue with Vercel, the live catalogue is now covered by a serverless function; configure any additional server-side features only when you intend to use them.
 
 ## If the compiler error persists
 
