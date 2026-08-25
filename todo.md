@@ -50,3 +50,7 @@
 - [x] Replace the Manus-hosted texture dependency with a Vercel-compatible background treatment.
 - [x] Validate that the production build no longer emits the texture-resolution warning.
 - [x] Save a checkpoint for the Vercel asset-compatibility fix.
+- [x] Inspect the optional analytics tag and confirm the latest source no longer references the Manus texture asset.
+- [x] Make analytics loading safe when Vercel variables are absent.
+- [x] Validate a warning-free build and document branch/root directory verification for Vercel.
+- [x] Save a checkpoint for the Vercel warning cleanup.

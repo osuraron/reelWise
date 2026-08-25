@@ -16,6 +16,12 @@ In Vercel, use the following settings for this repository:
 
 The former Manus-hosted paper texture has been replaced with a compact inline CSS grain treatment. It no longer relies on the `/manus-storage/...` path, so Vite can bundle the app without the prior texture-resolution warning.
 
+## Source verification in Vercel
+
+Set Vercel’s **Production Branch** to the branch that contains the latest `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `client/index.html`, and `client/src/index.css` changes. Keep the **Root Directory** at the repository root unless the Git repository stores Reelwise in a subfolder.
+
+On a deployment details page, compare the deployed commit with the newest Git commit that includes those files. If the build log still mentions `/manus-storage/reelwise-paper-texture_08dcbd0b.jpg` or `%VITE_ANALYTICS_ENDPOINT%`, Vercel is building an older commit or the wrong root directory; neither reference exists in the current source.
+
 ## Runtime compatibility
 
 The successful build produces static client assets in `dist/public` and a Node/Express server bundle at `dist/index.js`. The current server expects a persistent Node process and server-side environment variables for TMDB, OAuth, and data services. A standard Vercel static deployment will not provide the existing Express/tRPC runtime without an additional serverless-adapter conversion.

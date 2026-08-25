@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <meta name="theme-color" content="#f3eee4" />
+    <meta name="theme-color" content="#080808" />
     <meta name="description" content="Reelwise — one good thing to watch next." />
-    <link rel="icon" type="image/png" href="/manus-storage/reelwise-signal-glyph_882a2283.png" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Cpath d='M6 16h20' stroke='%23d94f3d' stroke-width='3'/%3E%3C/svg%3E" />
     <title>Reelwise — One good choice</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,6 +14,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script defer src="%VITE_ANALYTICS_ENDPOINT%/umami" data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <script type="module">
+      const analyticsEndpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
+      const analyticsWebsiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+      if (analyticsEndpoint && analyticsWebsiteId) {
+        const analyticsScript = document.createElement("script");
+        analyticsScript.defer = true;
+        analyticsScript.src = `${analyticsEndpoint.replace(/\/$/, "")}/umami`;
+        analyticsScript.dataset.websiteId = analyticsWebsiteId;
+        document.head.appendChild(analyticsScript);
+      }
+    </script>
   </body>
 </html>
