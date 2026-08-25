@@ -42,3 +42,7 @@
 - [x] Validate the production build and document required Vercel settings.
 - [ ] Redeploy on Vercel with Node 22 and a cleared build cache to confirm the external build environment.
 - [x] Save a checkpoint for the deployment compatibility fix.
+- [x] Confirm Vercel’s pnpm blocked-script message and determine the trusted dependency allowlist.
+- [x] Allow required esbuild and Tailwind native build scripts through pnpm configuration.
+- [x] Validate the approved-script install and production build, then update Vercel instructions.
+- [x] Save a checkpoint for the pnpm build-script approval fix.
