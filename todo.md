@@ -54,8 +54,8 @@
 - [x] Make analytics loading safe when Vercel variables are absent.
 - [x] Validate a warning-free build and document branch/root directory verification for Vercel.
 - [x] Save a checkpoint for the Vercel warning cleanup.
-- [ ] Inspect the local branch, GitHub remote, and pending workspace changes.
-- [ ] Commit the verified Vercel compatibility and warning-cleanup changes.
-- [ ] Push the current Reelwise branch to GitHub and confirm it is synchronized.
-- [ ] Report the synchronized GitHub branch and commit.
-- [ ] Force-replace the divergent GitHub master branch with the verified current workspace after committing local synchronization state.
+- [x] Inspect the local branch, GitHub remote, and pending workspace changes.
+- [x] Commit the verified Vercel compatibility and warning-cleanup changes.
+- [x] Push the current Reelwise branch to GitHub and confirm it is synchronized.
+- [x] Report the synchronized GitHub branch and commit.
+- [x] Force-replace the divergent GitHub master branch with the verified current workspace after committing local synchronization state.
