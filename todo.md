@@ -37,3 +37,8 @@
 - [x] Deepen app, panel, card, and navigation surfaces to a clean near-black palette.
 - [x] Preserve warm editorial text, signal-red accents, and accessible contrast.
 - [x] Verify near-black dark mode on recommendation and onboarding views, then save a checkpoint.
+- [x] Inspect package scripts, package-manager metadata, and Vercel-relevant build configuration.
+- [x] Identify and apply the Vercel-compatible build or dependency correction.
+- [x] Validate the production build and document required Vercel settings.
+- [ ] Redeploy on Vercel with Node 22 and a cleared build cache to confirm the external build environment.
+- [x] Save a checkpoint for the deployment compatibility fix.
