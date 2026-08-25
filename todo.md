@@ -46,3 +46,7 @@
 - [x] Allow required esbuild and Tailwind native build scripts through pnpm configuration.
 - [x] Validate the approved-script install and production build, then update Vercel instructions.
 - [x] Save a checkpoint for the pnpm build-script approval fix.
+- [x] Inspect the current Manus-hosted paper-texture reference and select a portable fallback.
+- [x] Replace the Manus-hosted texture dependency with a Vercel-compatible background treatment.
+- [x] Validate that the production build no longer emits the texture-resolution warning.
+- [x] Save a checkpoint for the Vercel asset-compatibility fix.

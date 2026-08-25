@@ -12,6 +12,10 @@ In Vercel, use the following settings for this repository:
 
 > Do not use Node 24 for this project until the deployment is stable. The failed build ran on Node 24.19.0, while the project’s pinned compiler toolchain is validated on Node 22. The next Vercel install should no longer show `Ignored build scripts: @tailwindcss/oxide, esbuild`; this project approves only those two trusted native build dependencies.
 
+## Asset compatibility
+
+The former Manus-hosted paper texture has been replaced with a compact inline CSS grain treatment. It no longer relies on the `/manus-storage/...` path, so Vite can bundle the app without the prior texture-resolution warning.
+
 ## Runtime compatibility
 
 The successful build produces static client assets in `dist/public` and a Node/Express server bundle at `dist/index.js`. The current server expects a persistent Node process and server-side environment variables for TMDB, OAuth, and data services. A standard Vercel static deployment will not provide the existing Express/tRPC runtime without an additional serverless-adapter conversion.

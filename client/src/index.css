@@ -70,7 +70,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid #d94f3d; outline-offs
   .brand-mark img { width: 30px; height: 30px; object-fit: contain; }
   .group:hover .brand-mark { transform: translateY(-1px) rotate(-2deg); }
 
-  .paper-grain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .045; background-image: url('/manus-storage/reelwise-paper-texture_08dcbd0b.jpg'); background-size: cover; mix-blend-mode: screen; }
+  .paper-grain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .04; background-image: radial-gradient(rgba(246,239,226,.18) .45px, transparent .6px), radial-gradient(rgba(246,239,226,.10) .4px, transparent .55px); background-position: 0 0, 3px 4px; background-size: 7px 7px, 11px 11px; mix-blend-mode: screen; }
   .eyebrow { display: flex; align-items: center; gap: 8px; font-family: "DM Sans", sans-serif; font-size: 10px; font-weight: 700; line-height: 1; letter-spacing: .19em; text-transform: uppercase; color: #a9aaa1; }
   .eyebrow-dot { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 999px; background: #d94f3d; }
   .signal-line { display: block; position: relative; height: 1px; width: 100%; background: rgba(246,239,226,.14); }
