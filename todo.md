@@ -71,3 +71,9 @@
 - [x] Implement and validate a Vercel-compatible live catalogue API route.
 - [x] Document required Vercel environment variables and redeploy steps.
 - [x] Save a checkpoint and push the Vercel live-catalogue API correction to GitHub master.
+- [x] Inspect the current application configuration and deployment documentation for accurate README content.
+- [x] Write a complete README covering Reelwise features, architecture, technology stack, setup, and deployment.
+- [x] Validate README commands and configuration references.
+- [x] Save a checkpoint covering the README documentation update.
+- [ ] Commit and push the README to GitHub master.
+- [ ] Report the README commit and repository synchronization.
